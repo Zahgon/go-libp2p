@@ -396,6 +396,9 @@ func newProbeManager(now func() time.Time) *probeManager {
 }
 
 // AppendConfirmedAddrs appends the current confirmed reachable and unreachable addresses.
+// The returned slices are sorted by Multiaddr.Compare: addrsManager.getConfirmedAddrs
+// passes them to removeNotInSource, and Addrs passes the unreachable set to
+// removeInSource, both of which require sorted input.
 func (m *probeManager) AppendConfirmedAddrs(reachable, unreachable, unknown []ma.Multiaddr) (reachableAddrs, unreachableAddrs, unknownAddrs []ma.Multiaddr) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
@@ -425,6 +428,16 @@ func (m *probeManager) AppendConfirmedAddrs(reachable, unreachable, unknown []ma
 			unknown = append(unknown, a)
 		}
 	}
+
+	// primaryAddrs and secondaryAddrs are each sorted, but interleave in the
+	// buckets above (a secondary like webrtc-direct sorts before its quic-v1
+	// primary). Unsorted output makes removeNotInSource silently drop
+	// confirmed addrs, and makes removeInSource fail to filter unreachable
+	// addrs out of Addrs().
+	cmp := func(a, b ma.Multiaddr) int { return a.Compare(b) }
+	slices.SortFunc(reachable, cmp)
+	slices.SortFunc(unreachable, cmp)
+	slices.SortFunc(unknown, cmp)
 	return reachable, unreachable, unknown
 }
 

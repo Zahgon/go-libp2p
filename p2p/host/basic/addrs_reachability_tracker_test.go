@@ -294,6 +294,41 @@ func TestProbeManager(t *testing.T) {
 	})
 }
 
+func TestProbeManagerConfirmedAddrsSorted(t *testing.T) {
+	// Secondary transports can sort before their primary: webrtc-direct
+	// (protocol code 280) sorts before quic-v1 (461) on the same UDP socket.
+	// AppendConfirmedAddrs iterates primaries then secondaries, so without a
+	// final sort the buckets interleave; removeNotInSource in addrsManager
+	// then drops confirmed addrs, and removeInSource fails to filter
+	// unreachable addrs out of Addrs().
+	tcp := ma.StringCast("/ip4/1.2.3.4/tcp/4001")
+	wsSNI := ma.StringCast("/ip4/1.2.3.4/tcp/4001/tls/sni/*.example.net/ws")
+	quic := ma.StringCast("/ip4/1.2.3.4/udp/4001/quic-v1")
+	webrtc := ma.StringCast("/ip4/1.2.3.4/udp/4001/webrtc-direct")
+	wt := ma.StringCast("/ip4/1.2.3.4/udp/4001/quic-v1/webtransport")
+	addrs := []ma.Multiaddr{tcp, wsSNI, quic, webrtc, wt}
+
+	cl := clock.NewMock()
+	pm := newProbeManager(cl.Now)
+	pm.UpdateAddrs(slices.Clone(addrs))
+
+	for {
+		reqs := pm.GetProbe()
+		if len(reqs) == 0 {
+			break
+		}
+		pm.MarkProbeInProgress(reqs)
+		pm.CompleteProbe(reqs, autonatv2.Result{Addr: reqs[0].Addr, Idx: 0, Reachability: network.ReachabilityPublic}, nil)
+	}
+
+	reachable, unreachable, unknown := pm.AppendConfirmedAddrs(nil, nil, nil)
+	require.Empty(t, unreachable)
+	require.Empty(t, unknown)
+	matest.AssertMultiaddrsMatch(t, addrs, reachable)
+	require.True(t, slices.IsSortedFunc(reachable, func(a, b ma.Multiaddr) int { return a.Compare(b) }),
+		"reachable addrs not sorted: %v", reachable)
+}
+
 type mockAutoNATClient struct {
 	F func(context.Context, []autonatv2.Request) (autonatv2.Result, error)
 }

@@ -449,6 +449,40 @@ func TestAddrsManagerReachabilityEvent(t *testing.T) {
 	}
 }
 
+func TestAddrsManagerConfirmedAddrsIncludesSecondaryTransports(t *testing.T) {
+	// A node listening on every transport kubo enables by default. The
+	// secondary transports (ws, webrtc-direct, webtransport) inherit Public
+	// from their thin-waist primary, and all of them must survive into
+	// ConfirmedAddrs: getConfirmedAddrs feeds these slices to
+	// removeNotInSource, which drops entries when its input is not sorted.
+	tcp := ma.StringCast("/ip4/1.2.3.4/tcp/4001")
+	wsSNI := ma.StringCast("/ip4/1.2.3.4/tcp/4001/tls/sni/*.example.net/ws")
+	quic := ma.StringCast("/ip4/1.2.3.4/udp/4001/quic-v1")
+	webrtc := ma.StringCast("/ip4/1.2.3.4/udp/4001/webrtc-direct")
+	wt := ma.StringCast("/ip4/1.2.3.4/udp/4001/quic-v1/webtransport")
+	listenAddrs := []ma.Multiaddr{tcp, wsSNI, quic, webrtc, wt}
+
+	am := newAddrsManagerTestCase(t, addrsManagerArgs{
+		ListenAddrs: func() []ma.Multiaddr { return listenAddrs },
+		AutoNATClient: mockAutoNATClient{
+			F: func(_ context.Context, reqs []autonatv2.Request) (autonatv2.Result, error) {
+				return autonatv2.Result{Addr: reqs[0].Addr, Idx: 0, Reachability: network.ReachabilityPublic}, nil
+			},
+		},
+	})
+	defer am.Close()
+
+	require.Eventually(t, func() bool {
+		reachable, _, _ := am.ConfirmedAddrs()
+		return len(reachable) == len(listenAddrs)
+	}, 5*time.Second, 50*time.Millisecond, "expected all listen addrs to become confirmed reachable")
+
+	reachable, unreachable, unknown := am.ConfirmedAddrs()
+	matest.AssertMultiaddrsMatch(t, listenAddrs, reachable)
+	require.Empty(t, unreachable)
+	require.Empty(t, unknown)
+}
+
 func TestAddrsManagerPeerstoreUpdated(t *testing.T) {
 	quic1 := ma.StringCast("/ip4/1.2.3.4/udp/1234/quic-v1")
 	quic2 := ma.StringCast("/ip4/1.2.3.5/udp/1/quic-v1")
