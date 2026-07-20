@@ -19,8 +19,6 @@ func main() {
 		libp2p.Transport(websocket.New),
 	)
 
-	// TODO: add a libp2p.Security instance and some libp2p.Muxer's
-
 	listenAddrs := libp2p.ListenAddrStrings(
 		"/ip4/0.0.0.0/tcp/0",
 		"/ip4/0.0.0.0/tcp/0/ws",

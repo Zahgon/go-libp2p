@@ -6,9 +6,6 @@ import (
 	"time"
 )
 
-// nonQUICPacketConn is a net.PacketConn that can be used to read and write
-// non-QUIC packets on a quic.Transport. This lets us reuse this UDP port for
-// other transports like WebRTC.
 type nonQUICPacketConn struct {
 	owningTransport RefCountedQUICTransport
 	tr              QUICTransport
@@ -18,55 +15,30 @@ type nonQUICPacketConn struct {
 	readCancel      context.CancelFunc
 }
 
-// Close implements net.PacketConn.
-func (n *nonQUICPacketConn) Close() error {
-	n.ctxCancel()
+func (n *nonQUICPacketConn) Close() error { _ = "STUB: not implemented"; return nil }
 
-	// Don't actually close the underlying transport since someone else might be using it.
-	// reuse has it's own gc to close unused transports.
-	n.owningTransport.DecreaseCount()
-	return nil
-}
+func (n *nonQUICPacketConn) LocalAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-// LocalAddr implements net.PacketConn.
-func (n *nonQUICPacketConn) LocalAddr() net.Addr {
-	return n.owningTransport.LocalAddr()
-}
-
-// ReadFrom implements net.PacketConn.
 func (n *nonQUICPacketConn) ReadFrom(p []byte) (int, net.Addr, error) {
-	ctx := n.readCtx
-	if ctx == nil {
-		ctx = n.ctx
-	}
-	return n.tr.ReadNonQUICPacket(ctx, p)
+	_ = "STUB: not implemented"
+	return 0, *new(net.Addr), nil
 }
 
-// SetDeadline implements net.PacketConn.
-func (n *nonQUICPacketConn) SetDeadline(t time.Time) error {
-	// Only used for reads.
-	return n.SetReadDeadline(t)
-}
+func (n *nonQUICPacketConn) SetDeadline(t time.Time) error { _ = "STUB: not implemented"; return nil }
 
-// SetReadDeadline implements net.PacketConn.
 func (n *nonQUICPacketConn) SetReadDeadline(t time.Time) error {
-	if t.IsZero() && n.readCtx != nil {
-		n.readCancel()
-		n.readCtx = nil
-	}
-	n.readCtx, n.readCancel = context.WithDeadline(n.ctx, t)
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// SetWriteDeadline implements net.PacketConn.
 func (n *nonQUICPacketConn) SetWriteDeadline(_ time.Time) error {
-	// Unused. quic-go doesn't support deadlines for writes.
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteTo implements net.PacketConn.
 func (n *nonQUICPacketConn) WriteTo(p []byte, addr net.Addr) (int, error) {
-	return n.tr.WriteTo(p, addr)
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 var _ net.PacketConn = &nonQUICPacketConn{}

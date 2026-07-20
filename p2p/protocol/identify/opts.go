@@ -10,41 +10,14 @@ type config struct {
 	timeout                 time.Duration
 }
 
-// Option is an option function for identify.
 type Option func(*config)
 
-// ProtocolVersion sets the protocol version string that will be used to
-// identify the family of protocols used by the peer.
-func ProtocolVersion(s string) Option {
-	return func(cfg *config) {
-		cfg.protocolVersion = s
-	}
-}
+func ProtocolVersion(s string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// UserAgent sets the user agent this node will identify itself with to peers.
-func UserAgent(ua string) Option {
-	return func(cfg *config) {
-		cfg.userAgent = ua
-	}
-}
+func UserAgent(ua string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// DisableSignedPeerRecord disables populating signed peer records on the outgoing Identify response
-// and ONLY sends the unsigned addresses.
-func DisableSignedPeerRecord() Option {
-	return func(cfg *config) {
-		cfg.disableSignedPeerRecord = true
-	}
-}
+func DisableSignedPeerRecord() Option { _ = "STUB: not implemented"; return *new(Option) }
 
-func WithMetricsTracer(tr MetricsTracer) Option {
-	return func(cfg *config) {
-		cfg.metricsTracer = tr
-	}
-}
+func WithMetricsTracer(tr MetricsTracer) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// WithTimeout sets the timeout for identify interactions.
-func WithTimeout(timeout time.Duration) Option {
-	return func(cfg *config) {
-		cfg.timeout = timeout
-	}
-}
+func WithTimeout(timeout time.Duration) Option { _ = "STUB: not implemented"; return *new(Option) }

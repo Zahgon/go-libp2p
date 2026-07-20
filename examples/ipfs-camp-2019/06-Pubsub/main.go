@@ -10,7 +10,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	kaddht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/routing"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
@@ -29,12 +28,7 @@ type discoveryNotifee struct {
 	ctx context.Context
 }
 
-func (m *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	if m.h.Network().Connectedness(pi.ID) != network.Connected {
-		fmt.Printf("Found %s!\n", pi.ID.ShortString())
-		m.h.Connect(m.ctx, pi)
-	}
-}
+func (m *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) { _ = "STUB: not implemented"; return }
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -73,8 +67,6 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: Replace our stream handler with a pubsub instance, and a handler
-	// to field incoming messages on our topic.
 	host.SetStreamHandler(chatProtocol, chatHandler)
 
 	for _, addr := range host.Addrs() {

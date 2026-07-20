@@ -8,47 +8,22 @@ import (
 )
 
 type memoryPeerMetadata struct {
-	// store other data, like versions
 	ds     map[peer.ID]map[string]any
 	dslock sync.RWMutex
 }
 
 var _ pstore.PeerMetadata = (*memoryPeerMetadata)(nil)
 
-func NewPeerMetadata() *memoryPeerMetadata {
-	return &memoryPeerMetadata{
-		ds: make(map[peer.ID]map[string]any),
-	}
-}
+func NewPeerMetadata() *memoryPeerMetadata { _ = "STUB: not implemented"; return nil }
 
 func (ps *memoryPeerMetadata) Put(p peer.ID, key string, val any) error {
-	ps.dslock.Lock()
-	defer ps.dslock.Unlock()
-	m, ok := ps.ds[p]
-	if !ok {
-		m = make(map[string]any)
-		ps.ds[p] = m
-	}
-	m[key] = val
+	_ = "STUB: not implemented"
 	return nil
 }
 
 func (ps *memoryPeerMetadata) Get(p peer.ID, key string) (any, error) {
-	ps.dslock.RLock()
-	defer ps.dslock.RUnlock()
-	m, ok := ps.ds[p]
-	if !ok {
-		return nil, pstore.ErrNotFound
-	}
-	val, ok := m[key]
-	if !ok {
-		return nil, pstore.ErrNotFound
-	}
-	return val, nil
+	_ = "STUB: not implemented"
+	return *new(any), nil
 }
 
-func (ps *memoryPeerMetadata) RemovePeer(p peer.ID) {
-	ps.dslock.Lock()
-	delete(ps.ds, p)
-	ps.dslock.Unlock()
-}
+func (ps *memoryPeerMetadata) RemovePeer(p peer.ID) { _ = "STUB: not implemented"; return }

@@ -4,13 +4,7 @@ import (
 	"sync"
 )
 
-func newThreshold(cutoff int) *threshold {
-	t := &threshold{
-		threshold: cutoff,
-	}
-	t.cond.L = &t.mu
-	return t
-}
+func newThreshold(cutoff int) *threshold { _ = "STUB: not implemented"; return nil }
 
 type threshold struct {
 	mu   sync.Mutex
@@ -20,31 +14,8 @@ type threshold struct {
 	threshold int
 }
 
-// Acquire increments the counter. It will not block.
-func (t *threshold) Acquire() {
-	t.mu.Lock()
-	t.count++
-	t.mu.Unlock()
-}
+func (t *threshold) Acquire() { _ = "STUB: not implemented"; return }
 
-// Release decrements the counter.
-func (t *threshold) Release() {
-	t.mu.Lock()
-	if t.count == 0 {
-		panic("negative count")
-	}
-	if t.threshold == t.count {
-		t.cond.Broadcast()
-	}
-	t.count--
-	t.mu.Unlock()
-}
+func (t *threshold) Release() { _ = "STUB: not implemented"; return }
 
-// Wait waits for the counter to drop below the threshold
-func (t *threshold) Wait() {
-	t.mu.Lock()
-	for t.count >= t.threshold {
-		t.cond.Wait()
-	}
-	t.mu.Unlock()
-}
+func (t *threshold) Wait() { _ = "STUB: not implemented"; return }

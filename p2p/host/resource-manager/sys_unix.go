@@ -2,15 +2,4 @@
 
 package rcmgr
 
-import (
-	"golang.org/x/sys/unix"
-)
-
-func getNumFDs() int {
-	var l unix.Rlimit
-	if err := unix.Getrlimit(unix.RLIMIT_NOFILE, &l); err != nil {
-		log.Error("failed to get fd limit", "err", err)
-		return 0
-	}
-	return int(l.Cur)
-}
+func getNumFDs() int { _ = "STUB: not implemented"; return 0 }

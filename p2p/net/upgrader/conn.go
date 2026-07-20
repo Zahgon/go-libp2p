@@ -1,8 +1,6 @@
 package upgrader
 
 import (
-	"fmt"
-
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/core/transport"
@@ -23,52 +21,33 @@ type transportConn struct {
 
 var _ transport.CapableConn = &transportConn{}
 
-func (c *transportConn) As(target any) bool {
-	return c.MuxedConn.As(target)
-}
+func (c *transportConn) As(target any) bool { _ = "STUB: not implemented"; return false }
 
 func (t *transportConn) Transport() transport.Transport {
-	return t.transport
+	_ = "STUB: not implemented"
+	return *new(transport.Transport)
 }
 
-func (t *transportConn) String() string {
-	ts := ""
-	if s, ok := t.transport.(fmt.Stringer); ok {
-		ts = "[" + s.String() + "]"
-	}
-	return fmt.Sprintf(
-		"<stream.Conn%s %s (%s) <-> %s (%s)>",
-		ts,
-		t.LocalMultiaddr(),
-		t.LocalPeer(),
-		t.RemoteMultiaddr(),
-		t.RemotePeer(),
-	)
-}
+func (t *transportConn) String() string { _ = "STUB: not implemented"; return "" }
 
 func (t *transportConn) Stat() network.ConnStats {
-	return t.stat
+	_ = "STUB: not implemented"
+	return *new(network.ConnStats)
 }
 
 func (t *transportConn) Scope() network.ConnScope {
-	return t.scope
+	_ = "STUB: not implemented"
+	return *new(network.ConnScope)
 }
 
-func (t *transportConn) Close() error {
-	defer t.scope.Done()
-	return t.MuxedConn.Close()
-}
+func (t *transportConn) Close() error { _ = "STUB: not implemented"; return nil }
 
 func (t *transportConn) ConnState() network.ConnectionState {
-	return network.ConnectionState{
-		StreamMultiplexer:         t.muxer,
-		Security:                  t.security,
-		Transport:                 "tcp",
-		UsedEarlyMuxerNegotiation: t.usedEarlyMuxerNegotiation,
-	}
+	_ = "STUB: not implemented"
+	return *new(network.ConnectionState)
 }
 
 func (t *transportConn) CloseWithError(errCode network.ConnErrorCode) error {
-	defer t.scope.Done()
-	return t.MuxedConn.CloseWithError(errCode)
+	_ = "STUB: not implemented"
+	return nil
 }

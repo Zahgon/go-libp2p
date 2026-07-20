@@ -7,19 +7,21 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 )
 
-// NullConnMgr is a ConnMgr that provides no functionality.
 type NullConnMgr struct{}
 
 var _ ConnManager = (*NullConnMgr)(nil)
 
-func (NullConnMgr) TagPeer(peer.ID, string, int)             {}
-func (NullConnMgr) UntagPeer(peer.ID, string)                {}
-func (NullConnMgr) UpsertTag(peer.ID, string, func(int) int) {}
-func (NullConnMgr) GetTagInfo(peer.ID) *TagInfo              { return &TagInfo{} }
-func (NullConnMgr) TrimOpenConns(_ context.Context)          {}
-func (NullConnMgr) Notifee() network.Notifiee                { return network.GlobalNoopNotifiee }
-func (NullConnMgr) Protect(peer.ID, string)                  {}
-func (NullConnMgr) Unprotect(peer.ID, string) bool           { return false }
-func (NullConnMgr) IsProtected(peer.ID, string) bool         { return false }
-func (NullConnMgr) CheckLimit(_ GetConnLimiter) error        { return nil }
-func (NullConnMgr) Close() error                             { return nil }
+func (NullConnMgr) TagPeer(peer.ID, string, int)             { _ = "STUB: not implemented"; return }
+func (NullConnMgr) UntagPeer(peer.ID, string)                { _ = "STUB: not implemented"; return }
+func (NullConnMgr) UpsertTag(peer.ID, string, func(int) int) { _ = "STUB: not implemented"; return }
+func (NullConnMgr) GetTagInfo(peer.ID) *TagInfo              { _ = "STUB: not implemented"; return nil }
+func (NullConnMgr) TrimOpenConns(_ context.Context)          { _ = "STUB: not implemented"; return }
+func (NullConnMgr) Notifee() network.Notifiee {
+	_ = "STUB: not implemented"
+	return *new(network.Notifiee)
+}
+func (NullConnMgr) Protect(peer.ID, string)           { _ = "STUB: not implemented"; return }
+func (NullConnMgr) Unprotect(peer.ID, string) bool    { _ = "STUB: not implemented"; return false }
+func (NullConnMgr) IsProtected(peer.ID, string) bool  { _ = "STUB: not implemented"; return false }
+func (NullConnMgr) CheckLimit(_ GetConnLimiter) error { _ = "STUB: not implemented"; return nil }
+func (NullConnMgr) Close() error                      { _ = "STUB: not implemented"; return nil }

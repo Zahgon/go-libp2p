@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"errors"
 	"io"
 	"net"
 	"sync"
@@ -14,11 +13,8 @@ import (
 	ws "github.com/gorilla/websocket"
 )
 
-// GracefulCloseTimeout is the time to wait trying to gracefully close a
-// connection before simply cutting it.
 var GracefulCloseTimeout = 100 * time.Millisecond
 
-// Conn implements net.Conn interface for gorilla/websocket.
 type Conn struct {
 	*ws.Conn
 	Scope              network.ConnManagementScope
@@ -35,151 +31,31 @@ type Conn struct {
 var _ net.Conn = (*Conn)(nil)
 var _ manet.Conn = (*Conn)(nil)
 
-// newConn creates a Conn given a regular gorilla/websocket Conn.
 func newConn(raw *ws.Conn, secure bool, scope network.ConnManagementScope) *Conn {
-	lna := NewAddrWithScheme(raw.LocalAddr().String(), secure)
-	laddr, err := manet.FromNetAddr(lna)
-	if err != nil {
-		log.Error("BUG: invalid localaddr on websocket conn", "local_addr", raw.LocalAddr())
-		return nil
-	}
-
-	rna := NewAddrWithScheme(raw.RemoteAddr().String(), secure)
-	raddr, err := manet.FromNetAddr(rna)
-	if err != nil {
-		log.Error("BUG: invalid remoteaddr on websocket conn", "remote_addr", raw.RemoteAddr())
-		return nil
-	}
-
-	c := &Conn{
-		Conn:               raw,
-		Scope:              scope,
-		secure:             secure,
-		DefaultMessageType: ws.BinaryMessage,
-		laddr:              laddr,
-		raddr:              raddr,
-	}
-	c.closeOnceVal = sync.OnceValue(c.closeOnceFn)
-	return c
-}
-
-// LocalMultiaddr implements manet.Conn.
-func (c *Conn) LocalMultiaddr() ma.Multiaddr {
-	return c.laddr
-}
-
-// RemoteMultiaddr implements manet.Conn.
-func (c *Conn) RemoteMultiaddr() ma.Multiaddr {
-	return c.raddr
-}
-
-func (c *Conn) Read(b []byte) (int, error) {
-	c.readLock.Lock()
-	defer c.readLock.Unlock()
-
-	if c.reader == nil {
-		if err := c.prepNextReader(); err != nil {
-			return 0, err
-		}
-	}
-
-	for {
-		n, err := c.reader.Read(b)
-		switch err {
-		case io.EOF:
-			c.reader = nil
-
-			if n > 0 {
-				return n, nil
-			}
-
-			if err := c.prepNextReader(); err != nil {
-				return 0, err
-			}
-
-			// explicitly looping
-		default:
-			return n, err
-		}
-	}
-}
-
-func (c *Conn) prepNextReader() error {
-	t, r, err := c.Conn.NextReader()
-	if err != nil {
-		if wserr, ok := err.(*ws.CloseError); ok {
-			if wserr.Code == 1000 || wserr.Code == 1005 {
-				return io.EOF
-			}
-		}
-		return err
-	}
-
-	if t == ws.CloseMessage {
-		return io.EOF
-	}
-
-	c.reader = r
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (c *Conn) Write(b []byte) (n int, err error) {
-	c.writeLock.Lock()
-	defer c.writeLock.Unlock()
+func (c *Conn) LocalMultiaddr() ma.Multiaddr { _ = "STUB: not implemented"; return *new(ma.Multiaddr) }
 
-	if err := c.Conn.WriteMessage(c.DefaultMessageType, b); err != nil {
-		return 0, err
-	}
+func (c *Conn) RemoteMultiaddr() ma.Multiaddr { _ = "STUB: not implemented"; return *new(ma.Multiaddr) }
 
-	return len(b), nil
-}
+func (c *Conn) Read(b []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-// Close closes the connection.
-// subsequent and concurrent calls will return the same error value.
-// This method is thread-safe.
-func (c *Conn) Close() error {
-	return c.closeOnceVal()
-}
+func (c *Conn) prepNextReader() error { _ = "STUB: not implemented"; return nil }
 
-func (c *Conn) closeOnceFn() error {
-	err0 := c.Conn.SetReadDeadline(time.Now())
-	err1 := c.Conn.WriteControl(
-		ws.CloseMessage,
-		ws.FormatCloseMessage(ws.CloseNormalClosure, "closed"),
-		time.Now().Add(GracefulCloseTimeout),
-	)
-	err2 := c.Conn.Close()
-	return errors.Join(err0, err1, err2)
-}
+func (c *Conn) Write(b []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (c *Conn) LocalAddr() net.Addr {
-	return NewAddrWithScheme(c.Conn.LocalAddr().String(), c.secure)
-}
+func (c *Conn) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (c *Conn) RemoteAddr() net.Addr {
-	return NewAddrWithScheme(c.Conn.RemoteAddr().String(), c.secure)
-}
+func (c *Conn) closeOnceFn() error { _ = "STUB: not implemented"; return nil }
 
-func (c *Conn) SetDeadline(t time.Time) error {
-	if err := c.SetReadDeadline(t); err != nil {
-		return err
-	}
+func (c *Conn) LocalAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-	return c.SetWriteDeadline(t)
-}
+func (c *Conn) RemoteAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-func (c *Conn) SetReadDeadline(t time.Time) error {
-	// Don't lock when setting the read deadline. That would prevent us from
-	// interrupting an in-progress read.
-	return c.Conn.SetReadDeadline(t)
-}
+func (c *Conn) SetDeadline(t time.Time) error { _ = "STUB: not implemented"; return nil }
 
-func (c *Conn) SetWriteDeadline(t time.Time) error {
-	// Unlike the read deadline, we need to lock when setting the write
-	// deadline.
+func (c *Conn) SetReadDeadline(t time.Time) error { _ = "STUB: not implemented"; return nil }
 
-	c.writeLock.Lock()
-	defer c.writeLock.Unlock()
-
-	return c.Conn.SetWriteDeadline(t)
-}
+func (c *Conn) SetWriteDeadline(t time.Time) error { _ = "STUB: not implemented"; return nil }

@@ -3,7 +3,6 @@ package relay
 import (
 	"time"
 
-	"github.com/libp2p/go-libp2p/p2p/metricshelper"
 	pbv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/pb"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -103,26 +102,21 @@ const (
 	requestStatusError    = "error"
 )
 
-// MetricsTracer is the interface for tracking metrics for relay service
 type MetricsTracer interface {
-	// RelayStatus tracks whether the service is currently active
 	RelayStatus(enabled bool)
 
-	// ConnectionOpened tracks metrics on opening a relay connection
 	ConnectionOpened()
-	// ConnectionClosed tracks metrics on closing a relay connection
+
 	ConnectionClosed(d time.Duration)
-	// ConnectionRequestHandled tracks metrics on handling a relay connection request
+
 	ConnectionRequestHandled(status pbv2.Status)
 
-	// ReservationAllowed tracks metrics on opening or renewing a relay reservation
 	ReservationAllowed(isRenewal bool)
-	// ReservationRequestClosed tracks metrics on closing a relay reservation
+
 	ReservationClosed(cnt int)
-	// ReservationRequestHandled tracks metrics on handling a relay reservation request
+
 	ReservationRequestHandled(status pbv2.Status)
 
-	// BytesTransferred tracks the total bytes transferred by the relay service
 	BytesTransferred(cnt int)
 }
 
@@ -137,132 +131,37 @@ type metricsTracerSetting struct {
 type MetricsTracerOption func(*metricsTracerSetting)
 
 func WithRegisterer(reg prometheus.Registerer) MetricsTracerOption {
-	return func(s *metricsTracerSetting) {
-		if reg != nil {
-			s.reg = reg
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracerOption)
 }
 
 func NewMetricsTracer(opts ...MetricsTracerOption) MetricsTracer {
-	setting := &metricsTracerSetting{reg: prometheus.DefaultRegisterer}
-	for _, opt := range opts {
-		opt(setting)
-	}
-	metricshelper.RegisterCollectors(setting.reg, collectors...)
-	return &metricsTracer{}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracer)
 }
 
-func (mt *metricsTracer) RelayStatus(enabled bool) {
-	if enabled {
-		status.Set(1)
-	} else {
-		status.Set(0)
-	}
-}
+func (mt *metricsTracer) RelayStatus(enabled bool) { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) ConnectionOpened() {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, "opened")
+func (mt *metricsTracer) ConnectionOpened() { _ = "STUB: not implemented"; return }
 
-	connectionsTotal.WithLabelValues(*tags...).Add(1)
-}
-
-func (mt *metricsTracer) ConnectionClosed(d time.Duration) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, "closed")
-
-	connectionsTotal.WithLabelValues(*tags...).Add(1)
-	connectionDurationSeconds.Observe(d.Seconds())
-}
+func (mt *metricsTracer) ConnectionClosed(d time.Duration) { _ = "STUB: not implemented"; return }
 
 func (mt *metricsTracer) ConnectionRequestHandled(status pbv2.Status) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	respStatus := getResponseStatus(status)
-
-	*tags = append(*tags, respStatus)
-	connectionRequestResponseStatusTotal.WithLabelValues(*tags...).Add(1)
-	if respStatus == requestStatusRejected {
-		*tags = (*tags)[:0]
-		*tags = append(*tags, getRejectionReason(status))
-		connectionRejectionsTotal.WithLabelValues(*tags...).Add(1)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) ReservationAllowed(isRenewal bool) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	if isRenewal {
-		*tags = append(*tags, "renewed")
-	} else {
-		*tags = append(*tags, "opened")
-	}
+func (mt *metricsTracer) ReservationAllowed(isRenewal bool) { _ = "STUB: not implemented"; return }
 
-	reservationsTotal.WithLabelValues(*tags...).Add(1)
-}
-
-func (mt *metricsTracer) ReservationClosed(cnt int) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, "closed")
-
-	reservationsTotal.WithLabelValues(*tags...).Add(float64(cnt))
-}
+func (mt *metricsTracer) ReservationClosed(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *metricsTracer) ReservationRequestHandled(status pbv2.Status) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	respStatus := getResponseStatus(status)
-
-	*tags = append(*tags, respStatus)
-	reservationRequestResponseStatusTotal.WithLabelValues(*tags...).Add(1)
-	if respStatus == requestStatusRejected {
-		*tags = (*tags)[:0]
-		*tags = append(*tags, getRejectionReason(status))
-		reservationRejectionsTotal.WithLabelValues(*tags...).Add(1)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) BytesTransferred(cnt int) {
-	dataTransferredBytesTotal.Add(float64(cnt))
-}
+func (mt *metricsTracer) BytesTransferred(cnt int) { _ = "STUB: not implemented"; return }
 
-func getResponseStatus(status pbv2.Status) string {
-	responseStatus := "unknown"
-	switch status {
-	case pbv2.Status_RESERVATION_REFUSED,
-		pbv2.Status_RESOURCE_LIMIT_EXCEEDED,
-		pbv2.Status_PERMISSION_DENIED,
-		pbv2.Status_NO_RESERVATION,
-		pbv2.Status_MALFORMED_MESSAGE:
+func getResponseStatus(status pbv2.Status) string { _ = "STUB: not implemented"; return "" }
 
-		responseStatus = requestStatusRejected
-	case pbv2.Status_UNEXPECTED_MESSAGE, pbv2.Status_CONNECTION_FAILED:
-		responseStatus = requestStatusError
-	case pbv2.Status_OK:
-		responseStatus = requestStatusOK
-	}
-	return responseStatus
-}
-
-func getRejectionReason(status pbv2.Status) string {
-	reason := "unknown"
-	switch status {
-	case pbv2.Status_RESERVATION_REFUSED:
-		reason = "ip constraint violation"
-	case pbv2.Status_RESOURCE_LIMIT_EXCEEDED:
-		reason = "resource limit exceeded"
-	case pbv2.Status_PERMISSION_DENIED:
-		reason = "permission denied"
-	case pbv2.Status_NO_RESERVATION:
-		reason = "no reservation"
-	case pbv2.Status_MALFORMED_MESSAGE:
-		reason = "malformed message"
-	}
-	return reason
-}
+func getRejectionReason(status pbv2.Status) string { _ = "STUB: not implemented"; return "" }

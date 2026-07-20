@@ -2,15 +2,12 @@ package swarm
 
 import "time"
 
-// InstantTimer is a timer that triggers at some instant rather than some duration
 type InstantTimer interface {
 	Reset(d time.Time) bool
 	Stop() bool
 	Ch() <-chan time.Time
 }
 
-// Clock is a clock that can create timers that trigger at some
-// instant rather than some duration
 type Clock interface {
 	Now() time.Time
 	Since(t time.Time) time.Duration
@@ -21,29 +18,24 @@ type RealTimer struct{ t *time.Timer }
 
 var _ InstantTimer = (*RealTimer)(nil)
 
-func (t RealTimer) Ch() <-chan time.Time {
-	return t.t.C
-}
+func (t RealTimer) Ch() <-chan time.Time { _ = "STUB: not implemented"; return nil }
 
-func (t RealTimer) Reset(d time.Time) bool {
-	return t.t.Reset(time.Until(d))
-}
+func (t RealTimer) Reset(d time.Time) bool { _ = "STUB: not implemented"; return false }
 
-func (t RealTimer) Stop() bool {
-	return t.t.Stop()
-}
+func (t RealTimer) Stop() bool { _ = "STUB: not implemented"; return false }
 
 type RealClock struct{}
 
 var _ Clock = RealClock{}
 
-func (RealClock) Now() time.Time {
-	return time.Now()
-}
+func (RealClock) Now() time.Time { _ = "STUB: not implemented"; return *new(time.Time) }
+
 func (RealClock) Since(t time.Time) time.Duration {
-	return time.Since(t)
+	_ = "STUB: not implemented"
+	return *new(time.Duration)
 }
+
 func (RealClock) InstantTimer(when time.Time) InstantTimer {
-	t := time.NewTimer(time.Until(when))
-	return &RealTimer{t}
+	_ = "STUB: not implemented"
+	return *new(InstantTimer)
 }

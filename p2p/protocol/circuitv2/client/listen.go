@@ -3,7 +3,6 @@ package client
 import (
 	"net"
 
-	"github.com/libp2p/go-libp2p/core/transport"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
 )
@@ -12,45 +11,15 @@ var _ manet.Listener = (*Listener)(nil)
 
 type Listener Client
 
-func (c *Client) Listener() *Listener {
-	return (*Listener)(c)
-}
+func (c *Client) Listener() *Listener { _ = "STUB: not implemented"; return nil }
 
 func (l *Listener) Accept() (manet.Conn, error) {
-	for {
-		select {
-		case evt := <-l.incoming:
-			err := evt.writeResponse()
-			if err != nil {
-				log.Debug("error writing relay response", "err", err)
-				evt.conn.stream.Reset()
-				continue
-			}
-
-			log.Debug("accepted relay connection",
-				"remote_peer", evt.conn.remote.ID,
-				"remote_multiaddr", evt.conn.RemoteMultiaddr())
-
-			evt.conn.tagHop()
-			return evt.conn, nil
-
-		case <-l.ctx.Done():
-			return nil, transport.ErrListenerClosed
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(manet.Conn), nil
 }
 
-func (l *Listener) Addr() net.Addr {
-	return &NetAddr{
-		Relay:  "any",
-		Remote: "any",
-	}
-}
+func (l *Listener) Addr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-func (l *Listener) Multiaddr() ma.Multiaddr {
-	return circuitAddr
-}
+func (l *Listener) Multiaddr() ma.Multiaddr { _ = "STUB: not implemented"; return *new(ma.Multiaddr) }
 
-func (l *Listener) Close() error {
-	return (*Client)(l).Close()
-}
+func (l *Listener) Close() error { _ = "STUB: not implemented"; return nil }

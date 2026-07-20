@@ -28,9 +28,7 @@ type mdnsNotifee struct {
 	ctx context.Context
 }
 
-func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	m.h.Connect(m.ctx, pi)
-}
+func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) { _ = "STUB: not implemented"; return }
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -82,7 +80,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// TODO: Modify this handler to use the protobufs defined in this folder
+
 	go pubsubHandler(ctx, sub)
 
 	for _, addr := range host.Addrs() {
@@ -117,8 +115,7 @@ func main() {
 	}
 
 	donec := make(chan struct{}, 1)
-	// TODO: modify this chat input loop to use the protobufs defined in this
-	// folder.
+
 	go chatInputLoop(ctx, topic, donec)
 
 	stop := make(chan os.Signal, 1)

@@ -12,15 +12,10 @@ func main() {
 		libp2p.Transport(websocket.New),
 	)
 
-	// TODO: add some listen addresses with the libp2p.ListenAddrs or
-	// libp2p.ListenAddrStrings configuration options.
-
 	host, err := libp2p.New(transports)
 	if err != nil {
 		panic(err)
 	}
-
-	// TODO: with our host made, let's connect to our bootstrap peer
 
 	host.Close()
 }

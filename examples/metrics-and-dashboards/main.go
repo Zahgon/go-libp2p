@@ -1,17 +1,13 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -43,7 +39,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Make a bunch of clients that all ping the server at various times
 	wg := sync.WaitGroup{}
 	for i := 0; i < ClientCount; i++ {
 		wg.Add(1)
@@ -59,35 +54,4 @@ func main() {
 	wg.Wait()
 }
 
-func newClient(serverInfo peer.AddrInfo, pings int) {
-	// Sleep some random amount of time to spread out the clients so the graphs look more interesting
-	time.Sleep(time.Duration(rand.Intn(100)) * time.Second)
-	fmt.Println("Started client", pings)
-
-	client, err := libp2p.New(
-		// We just want metrics from the server
-		libp2p.DisableMetrics(),
-		libp2p.NoListenAddrs,
-	)
-	defer func() {
-		_ = client.Close()
-	}()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client.Connect(context.Background(), serverInfo)
-
-	p := ping.Ping(context.Background(), client, serverInfo.ID)
-
-	pingSoFar := 0
-	for pingSoFar < pings {
-		res := <-p
-		pingSoFar++
-		if res.Error != nil {
-			log.Fatal(res.Error)
-		}
-		time.Sleep(5 * time.Second)
-	}
-}
+func newClient(serverInfo peer.AddrInfo, pings int) { _ = "STUB: not implemented"; return }

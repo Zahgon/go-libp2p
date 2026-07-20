@@ -1,8 +1,6 @@
 package ttransport
 
 import (
-	"reflect"
-	"runtime"
 	"testing"
 
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -19,7 +17,6 @@ var Subtests = []TransportSubTestFn{
 	SubtestCancel,
 	SubtestPingPong,
 
-	// Stolen from the stream muxer test suite.
 	SubtestStress1Conn1Stream1Msg,
 	SubtestStress1Conn1Stream100Msg,
 	SubtestStress1Conn100Stream100Msg,
@@ -30,24 +27,14 @@ var Subtests = []TransportSubTestFn{
 	SubtestStreamReset,
 }
 
-func getFunctionName(i any) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
+func getFunctionName(i any) string { _ = "STUB: not implemented"; return "" }
 
 func SubtestTransport(t *testing.T, ta, tb transport.Transport, addr string, peerA peer.ID) {
-	t.Helper()
-	SubtestTransportWithFs(t, ta, tb, addr, peerA, Subtests)
+	_ = "STUB: not implemented"
+	return
 }
 
 func SubtestTransportWithFs(t *testing.T, ta, tb transport.Transport, addr string, peerA peer.ID, tests []TransportSubTestFn) {
-	maddr, err := ma.NewMultiaddr(addr)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, f := range tests {
-		t.Run(getFunctionName(f), func(t *testing.T) {
-			f(t, ta, tb, maddr, peerA)
-		})
-	}
+	_ = "STUB: not implemented"
+	return
 }
