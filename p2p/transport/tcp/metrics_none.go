@@ -1,5 +1,3 @@
-// riscv64 see: https://github.com/marten-seemann/tcp/pull/1
-
 //go:build windows || riscv64 || loong64
 
 package tcp
@@ -12,8 +10,11 @@ import (
 type aggregatingCollector struct{}
 
 func newTracingConn(c manet.Conn, collector *aggregatingCollector, isClient bool) (manet.Conn, error) {
-	return c, nil
+	_ = "STUB: not implemented"
+	return *new(manet.Conn), nil
 }
+
 func newTracingListener(l transport.GatedMaListener, collector *aggregatingCollector) transport.GatedMaListener {
-	return l
+	_ = "STUB: not implemented"
+	return *new(transport.GatedMaListener)
 }

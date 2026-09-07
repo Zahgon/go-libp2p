@@ -1,4 +1,3 @@
-// gotest2sql inserts the output of go test -json ./... into a sqlite database
 package main
 
 import (
@@ -15,11 +14,11 @@ import (
 )
 
 type TestEvent struct {
-	Time    time.Time // encodes as an RFC3339-format string
+	Time    time.Time
 	Action  string
 	Package string
 	Test    string
-	Elapsed float64 // seconds
+	Elapsed float64
 	Output  string
 }
 
@@ -37,7 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Create a table to store test results.
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS test_results (
 			Time TEXT,
@@ -57,7 +55,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Prepare the insert statement once
 	insertTime := time.Now().Format(time.RFC3339Nano)
 	stmt, err := tx.Prepare(`
     INSERT INTO test_results (Time, Action, Package, Test, Elapsed, Output, BatchInsertTime)
@@ -65,7 +62,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer stmt.Close() // Ensure the statement is closed after use
+	defer stmt.Close()
 
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
@@ -93,7 +90,6 @@ func main() {
 		}
 	}
 
-	// Commit the transaction
 	if err := tx.Commit(); err != nil {
 		log.Fatal(err)
 	}

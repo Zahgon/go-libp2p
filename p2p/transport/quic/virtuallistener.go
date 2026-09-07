@@ -3,9 +3,7 @@ package libp2pquic
 import (
 	"sync"
 
-	"github.com/libp2p/go-libp2p/core/network"
 	tpt "github.com/libp2p/go-libp2p/core/transport"
-	"github.com/libp2p/go-libp2p/p2p/transport/quicreuse"
 
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/quic-go/quic-go"
@@ -13,7 +11,6 @@ import (
 
 const acceptBufferPerVersion = 4
 
-// virtualListener is a listener that exposes a single multiaddr but uses another listener under the hood
 type virtualListener struct {
 	*listener
 	udpAddr       string
@@ -26,16 +23,15 @@ type virtualListener struct {
 var _ tpt.Listener = &virtualListener{}
 
 func (l *virtualListener) Multiaddr() ma.Multiaddr {
-	return l.listener.localMultiaddrs[l.version]
+	_ = "STUB: not implemented"
+	return *new(ma.Multiaddr)
 }
 
-func (l *virtualListener) Close() error {
-	l.acceptRunnner.RmAcceptForVersion(l.version, tpt.ErrListenerClosed)
-	return l.t.CloseVirtualListener(l)
-}
+func (l *virtualListener) Close() error { _ = "STUB: not implemented"; return nil }
 
 func (l *virtualListener) Accept() (tpt.CapableConn, error) {
-	return l.acceptRunnner.Accept(l.listener, l.version, l.acceptChan)
+	_ = "STUB: not implemented"
+	return *new(tpt.CapableConn), nil
 }
 
 type acceptVal struct {
@@ -52,125 +48,23 @@ type acceptLoopRunner struct {
 }
 
 func (r *acceptLoopRunner) AcceptForVersion(v quic.Version) chan acceptVal {
-	r.muxerMu.Lock()
-	defer r.muxerMu.Unlock()
-
-	ch := make(chan acceptVal, acceptBufferPerVersion)
-
-	if _, ok := r.muxer[v]; ok {
-		panic("unexpected chan already found in accept muxer")
-	}
-
-	r.muxer[v] = ch
-	return ch
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *acceptLoopRunner) RmAcceptForVersion(v quic.Version, err error) {
-	r.muxerMu.Lock()
-	defer r.muxerMu.Unlock()
-
-	if r.muxerClosed {
-		// Already closed, all versions are removed
-		return
-	}
-
-	ch, ok := r.muxer[v]
-	if !ok {
-		panic("expected chan in accept muxer")
-	}
-	ch <- acceptVal{err: err}
-	delete(r.muxer, v)
+	_ = "STUB: not implemented"
+	return
 }
 
-func (r *acceptLoopRunner) sendErrAndClose(err error) {
-	r.muxerMu.Lock()
-	defer r.muxerMu.Unlock()
-	r.muxerClosed = true
-	for k, ch := range r.muxer {
-		select {
-		case ch <- acceptVal{err: err}:
-		default:
-		}
-		delete(r.muxer, k)
-		close(ch)
-	}
-}
+func (r *acceptLoopRunner) sendErrAndClose(err error) { _ = "STUB: not implemented"; return }
 
-// innerAccept is the inner logic of the Accept loop. Assume caller holds the
-// acceptSemaphore. May return both a nil conn and nil error if it didn't find a
-// conn with the expected version
 func (r *acceptLoopRunner) innerAccept(l *listener, expectedVersion quic.Version, bufferedConnChan chan acceptVal) (tpt.CapableConn, error) {
-	select {
-	// Check if we have a buffered connection first from an earlier Accept call
-	case v, ok := <-bufferedConnChan:
-		if !ok {
-			return nil, tpt.ErrListenerClosed
-		}
-		return v.conn, v.err
-	default:
-	}
-
-	conn, err := l.Accept()
-
-	if err != nil {
-		r.sendErrAndClose(err)
-		return nil, err
-	}
-
-	_, version, err := quicreuse.FromQuicMultiaddr(conn.RemoteMultiaddr())
-	if err != nil {
-		r.sendErrAndClose(err)
-		return nil, err
-	}
-
-	if version == expectedVersion {
-		return conn, nil
-	}
-
-	// This wasn't the version we were expecting, lets queue it up for a
-	// future Accept call with a different version
-	r.muxerMu.Lock()
-	ch, ok := r.muxer[version]
-	r.muxerMu.Unlock()
-
-	if !ok {
-		// Nothing to handle this connection version. Close it
-		conn.Close()
-		return nil, nil
-	}
-
-	// Non blocking
-	select {
-	case ch <- acceptVal{conn: conn}:
-	default:
-		conn.CloseWithError(network.ConnRateLimited)
-		// accept queue filled up, drop the connection
-		log.Warn("Accept queue filled. Dropping connection.")
-	}
-
-	return nil, nil
+	_ = "STUB: not implemented"
+	return *new(tpt.CapableConn), nil
 }
 
 func (r *acceptLoopRunner) Accept(l *listener, expectedVersion quic.Version, bufferedConnChan chan acceptVal) (tpt.CapableConn, error) {
-	for {
-		var conn tpt.CapableConn
-		var err error
-		select {
-		case r.acceptSem <- struct{}{}:
-			conn, err = r.innerAccept(l, expectedVersion, bufferedConnChan)
-			<-r.acceptSem
-
-			if conn == nil && err == nil {
-				// Didn't find a conn for the expected version and there was no error, lets try again
-				continue
-			}
-		case v, ok := <-bufferedConnChan:
-			if !ok {
-				return nil, tpt.ErrListenerClosed
-			}
-			conn = v.conn
-			err = v.err
-		}
-		return conn, err
-	}
+	_ = "STUB: not implemented"
+	return *new(tpt.CapableConn), nil
 }

@@ -9,7 +9,7 @@ const (
 	hasByteCounter    = false
 )
 
-func getSegmentsSent(_ *tcpinfo.Info) uint64 { return 0 }
-func getSegmentsRcvd(_ *tcpinfo.Info) uint64 { return 0 }
-func getBytesSent(_ *tcpinfo.Info) uint64    { return 0 }
-func getBytesRcvd(_ *tcpinfo.Info) uint64    { return 0 }
+func getSegmentsSent(_ *tcpinfo.Info) uint64 { _ = "STUB: not implemented"; return 0 }
+func getSegmentsRcvd(_ *tcpinfo.Info) uint64 { _ = "STUB: not implemented"; return 0 }
+func getBytesSent(_ *tcpinfo.Info) uint64    { _ = "STUB: not implemented"; return 0 }
+func getBytesRcvd(_ *tcpinfo.Info) uint64    { _ = "STUB: not implemented"; return 0 }

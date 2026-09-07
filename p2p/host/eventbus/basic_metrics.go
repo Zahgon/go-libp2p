@@ -2,9 +2,6 @@ package eventbus
 
 import (
 	"reflect"
-	"strings"
-
-	"github.com/libp2p/go-libp2p/p2p/metricshelper"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -61,25 +58,17 @@ var (
 	}
 )
 
-// MetricsTracer tracks metrics for the eventbus subsystem
 type MetricsTracer interface {
-
-	// EventEmitted counts the total number of events grouped by event type
 	EventEmitted(typ reflect.Type)
 
-	// AddSubscriber adds a subscriber for the event type
 	AddSubscriber(typ reflect.Type)
 
-	// RemoveSubscriber removes a subscriber for the event type
 	RemoveSubscriber(typ reflect.Type)
 
-	// SubscriberQueueLength is the length of the subscribers channel
 	SubscriberQueueLength(name string, n int)
 
-	// SubscriberQueueFull tracks whether a subscribers channel if full
 	SubscriberQueueFull(name string, isFull bool)
 
-	// SubscriberEventQueued counts the total number of events grouped by subscriber
 	SubscriberEventQueued(name string)
 }
 
@@ -94,71 +83,29 @@ type metricsTracerSetting struct {
 type MetricsTracerOption func(*metricsTracerSetting)
 
 func WithRegisterer(reg prometheus.Registerer) MetricsTracerOption {
-	return func(s *metricsTracerSetting) {
-		if reg != nil {
-			s.reg = reg
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracerOption)
 }
 
 func NewMetricsTracer(opts ...MetricsTracerOption) MetricsTracer {
-	setting := &metricsTracerSetting{reg: prometheus.DefaultRegisterer}
-	for _, opt := range opts {
-		opt(setting)
-	}
-	metricshelper.RegisterCollectors(setting.reg, collectors...)
-	return &metricsTracer{}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracer)
 }
 
-func (m *metricsTracer) EventEmitted(typ reflect.Type) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
+func (m *metricsTracer) EventEmitted(typ reflect.Type) { _ = "STUB: not implemented"; return }
 
-	*tags = append(*tags, strings.TrimPrefix(typ.String(), "event."))
-	eventsEmitted.WithLabelValues(*tags...).Inc()
-}
+func (m *metricsTracer) AddSubscriber(typ reflect.Type) { _ = "STUB: not implemented"; return }
 
-func (m *metricsTracer) AddSubscriber(typ reflect.Type) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, strings.TrimPrefix(typ.String(), "event."))
-	totalSubscribers.WithLabelValues(*tags...).Inc()
-}
-
-func (m *metricsTracer) RemoveSubscriber(typ reflect.Type) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, strings.TrimPrefix(typ.String(), "event."))
-	totalSubscribers.WithLabelValues(*tags...).Dec()
-}
+func (m *metricsTracer) RemoveSubscriber(typ reflect.Type) { _ = "STUB: not implemented"; return }
 
 func (m *metricsTracer) SubscriberQueueLength(name string, n int) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, name)
-	subscriberQueueLength.WithLabelValues(*tags...).Set(float64(n))
+	_ = "STUB: not implemented"
+	return
 }
 
 func (m *metricsTracer) SubscriberQueueFull(name string, isFull bool) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, name)
-	observer := subscriberQueueFull.WithLabelValues(*tags...)
-	if isFull {
-		observer.Set(1)
-	} else {
-		observer.Set(0)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (m *metricsTracer) SubscriberEventQueued(name string) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, name)
-	subscriberEventQueued.WithLabelValues(*tags...).Inc()
-}
+func (m *metricsTracer) SubscriberEventQueued(name string) { _ = "STUB: not implemented"; return }

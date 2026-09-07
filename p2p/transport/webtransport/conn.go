@@ -22,8 +22,14 @@ type connMultiaddrs struct {
 
 var _ network.ConnMultiaddrs = &connMultiaddrs{}
 
-func (c *connMultiaddrs) LocalMultiaddr() ma.Multiaddr  { return c.local }
-func (c *connMultiaddrs) RemoteMultiaddr() ma.Multiaddr { return c.remote }
+func (c *connMultiaddrs) LocalMultiaddr() ma.Multiaddr {
+	_ = "STUB: not implemented"
+	return *new(ma.Multiaddr)
+}
+func (c *connMultiaddrs) RemoteMultiaddr() ma.Multiaddr {
+	_ = "STUB: not implemented"
+	return *new(ma.Multiaddr)
+}
 
 type conn struct {
 	*connSecurityMultiaddrs
@@ -38,66 +44,33 @@ type conn struct {
 var _ tpt.CapableConn = &conn{}
 
 func newConn(tr *transport, sess *webtransport.Session, sconn *connSecurityMultiaddrs, scope network.ConnManagementScope, qconn *quic.Conn) *conn {
-	return &conn{
-		connSecurityMultiaddrs: sconn,
-		transport:              tr,
-		session:                sess,
-		scope:                  scope,
-		qconn:                  qconn,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (c *conn) OpenStream(ctx context.Context) (network.MuxedStream, error) {
-	str, err := c.session.OpenStreamSync(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &stream{str}, nil
+	_ = "STUB: not implemented"
+	return *new(network.MuxedStream), nil
 }
 
 func (c *conn) AcceptStream() (network.MuxedStream, error) {
-	str, err := c.session.AcceptStream(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	return &stream{str}, nil
+	_ = "STUB: not implemented"
+	return *new(network.MuxedStream), nil
 }
 
-func (c *conn) allowWindowIncrease(size uint64) bool {
-	return c.scope.ReserveMemory(int(size), network.ReservationPriorityMedium) == nil
-}
+func (c *conn) allowWindowIncrease(size uint64) bool { _ = "STUB: not implemented"; return false }
 
-// Close closes the connection.
-// It must be called even if the peer closed the connection in order for
-// garbage collection to properly work in this package.
-func (c *conn) Close() error {
-	defer c.scope.Done()
-	c.transport.removeConn(c.qconn)
-	err := c.session.CloseWithError(0, "")
-	_ = c.qconn.CloseWithError(1, "")
-	return err
-}
+func (c *conn) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (c *conn) CloseWithError(_ network.ConnErrorCode) error {
-	return c.Close()
-}
+func (c *conn) CloseWithError(_ network.ConnErrorCode) error { _ = "STUB: not implemented"; return nil }
 
-func (c *conn) IsClosed() bool           { return c.session.Context().Err() != nil }
-func (c *conn) Scope() network.ConnScope { return c.scope }
-func (c *conn) Transport() tpt.Transport { return c.transport }
+func (c *conn) IsClosed() bool           { _ = "STUB: not implemented"; return false }
+func (c *conn) Scope() network.ConnScope { _ = "STUB: not implemented"; return *new(network.ConnScope) }
+func (c *conn) Transport() tpt.Transport { _ = "STUB: not implemented"; return *new(tpt.Transport) }
 
 func (c *conn) ConnState() network.ConnectionState {
-	return network.ConnectionState{Transport: "webtransport"}
+	_ = "STUB: not implemented"
+	return *new(network.ConnectionState)
 }
 
-func (c *conn) As(target any) bool {
-	if target, ok := target.(**quic.Conn); ok {
-		*target = c.qconn
-		return true
-	}
-	if target, ok := target.(**webtransport.Session); ok {
-		*target = c.session
-		return true
-	}
-	return false
-}
+func (c *conn) As(target any) bool { _ = "STUB: not implemented"; return false }

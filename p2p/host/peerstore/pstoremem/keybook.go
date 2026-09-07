@@ -1,7 +1,6 @@
 package pstoremem
 
 import (
-	"errors"
 	"sync"
 
 	ic "github.com/libp2p/go-libp2p/core/crypto"
@@ -10,88 +9,38 @@ import (
 )
 
 type memoryKeyBook struct {
-	sync.RWMutex // same lock. wont happen a ton.
-	pks          map[peer.ID]ic.PubKey
-	sks          map[peer.ID]ic.PrivKey
+	sync.RWMutex
+	pks map[peer.ID]ic.PubKey
+	sks map[peer.ID]ic.PrivKey
 }
 
 var _ pstore.KeyBook = (*memoryKeyBook)(nil)
 
-func NewKeyBook() *memoryKeyBook {
-	return &memoryKeyBook{
-		pks: map[peer.ID]ic.PubKey{},
-		sks: map[peer.ID]ic.PrivKey{},
-	}
-}
+func NewKeyBook() *memoryKeyBook { _ = "STUB: not implemented"; return nil }
 
 func (mkb *memoryKeyBook) PeersWithKeys() peer.IDSlice {
-	mkb.RLock()
-	ps := make(peer.IDSlice, 0, len(mkb.pks)+len(mkb.sks))
-	for p := range mkb.pks {
-		ps = append(ps, p)
-	}
-	for p := range mkb.sks {
-		if _, found := mkb.pks[p]; !found {
-			ps = append(ps, p)
-		}
-	}
-	mkb.RUnlock()
-	return ps
+	_ = "STUB: not implemented"
+	return *new(peer.IDSlice)
 }
 
 func (mkb *memoryKeyBook) PubKey(p peer.ID) ic.PubKey {
-	mkb.RLock()
-	pk := mkb.pks[p]
-	mkb.RUnlock()
-	if pk != nil {
-		return pk
-	}
-	pk, err := p.ExtractPublicKey()
-	if err == nil {
-		mkb.Lock()
-		mkb.pks[p] = pk
-		mkb.Unlock()
-	}
-	return pk
+	_ = "STUB: not implemented"
+	return *new(ic.PubKey)
 }
 
 func (mkb *memoryKeyBook) AddPubKey(p peer.ID, pk ic.PubKey) error {
-	// check it's correct first
-	if !p.MatchesPublicKey(pk) {
-		return errors.New("ID does not match PublicKey")
-	}
-
-	mkb.Lock()
-	mkb.pks[p] = pk
-	mkb.Unlock()
+	_ = "STUB: not implemented"
 	return nil
 }
 
 func (mkb *memoryKeyBook) PrivKey(p peer.ID) ic.PrivKey {
-	mkb.RLock()
-	defer mkb.RUnlock()
-	return mkb.sks[p]
+	_ = "STUB: not implemented"
+	return *new(ic.PrivKey)
 }
 
 func (mkb *memoryKeyBook) AddPrivKey(p peer.ID, sk ic.PrivKey) error {
-	if sk == nil {
-		return errors.New("sk is nil (PrivKey)")
-	}
-
-	// check it's correct first
-	if !p.MatchesPrivateKey(sk) {
-		return errors.New("ID does not match PrivateKey")
-	}
-
-	mkb.Lock()
-	mkb.sks[p] = sk
-	mkb.Unlock()
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (mkb *memoryKeyBook) RemovePeer(p peer.ID) {
-	mkb.Lock()
-	delete(mkb.sks, p)
-	delete(mkb.pks, p)
-	mkb.Unlock()
-}
+func (mkb *memoryKeyBook) RemovePeer(p peer.ID) { _ = "STUB: not implemented"; return }

@@ -1,16 +1,12 @@
-// Package metrics provides metrics collection and reporting interfaces for libp2p.
 package metrics
 
 import (
+	"time"
+
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
-	"time"
 )
 
-// Stats represents a point-in-time snapshot of bandwidth metrics.
-//
-// The TotalIn and TotalOut fields record cumulative bytes sent / received.
-// The RateIn and RateOut fields record bytes sent / received per second.
 type Stats struct {
 	TotalIn  int64
 	TotalOut int64
@@ -18,7 +14,6 @@ type Stats struct {
 	RateOut  float64
 }
 
-// Reporter provides methods for logging and retrieving metrics.
 type Reporter interface {
 	LogSentMessage(int64)
 	LogRecvMessage(int64)

@@ -1,15 +1,10 @@
 package swarm
 
 import (
-	"context"
-	"errors"
-	"net"
-	"strings"
 	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/network"
-	"github.com/libp2p/go-libp2p/p2p/metricshelper"
 
 	ma "github.com/multiformats/go-multiaddr"
 
@@ -56,7 +51,7 @@ var (
 			Namespace: metricNamespace,
 			Name:      "connection_duration_seconds",
 			Help:      "Duration of a Connection",
-			Buckets:   prometheus.ExponentialBuckets(1.0/16, 2, 25), // up to 24 days
+			Buckets:   prometheus.ExponentialBuckets(1.0/16, 2, 25),
 		},
 		[]string{"dir", "transport", "security", "muxer", "early_muxer", "ip_version"},
 	)
@@ -155,144 +150,49 @@ type metricsTracerSetting struct {
 type MetricsTracerOption func(*metricsTracerSetting)
 
 func WithRegisterer(reg prometheus.Registerer) MetricsTracerOption {
-	return func(s *metricsTracerSetting) {
-		if reg != nil {
-			s.reg = reg
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracerOption)
 }
 
 func NewMetricsTracer(opts ...MetricsTracerOption) MetricsTracer {
-	setting := &metricsTracerSetting{reg: prometheus.DefaultRegisterer}
-	for _, opt := range opts {
-		opt(setting)
-	}
-	metricshelper.RegisterCollectors(setting.reg, collectors...)
-	return &metricsTracer{}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracer)
 }
 
 func appendConnectionState(tags []string, cs network.ConnectionState) []string {
-	if cs.Transport == "" {
-		// This shouldn't happen, unless the transport doesn't properly set the Transport field in the ConnectionState.
-		tags = append(tags, "unknown")
-	} else {
-		tags = append(tags, cs.Transport)
-	}
-	// These might be empty, depending on the transport.
-	// For example, QUIC doesn't set security nor muxer.
-	tags = append(tags, string(cs.Security))
-	tags = append(tags, string(cs.StreamMultiplexer))
-
-	earlyMuxer := "false"
-	if cs.UsedEarlyMuxerNegotiation {
-		earlyMuxer = "true"
-	}
-	tags = append(tags, earlyMuxer)
-	return tags
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (m *metricsTracer) OpenedConnection(dir network.Direction, p crypto.PubKey, cs network.ConnectionState, laddr ma.Multiaddr) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, metricshelper.GetDirection(dir))
-	*tags = appendConnectionState(*tags, cs)
-	*tags = append(*tags, metricshelper.GetIPVersion(laddr))
-	connsOpened.WithLabelValues(*tags...).Inc()
-
-	*tags = (*tags)[:0]
-	*tags = append(*tags, metricshelper.GetDirection(dir))
-	*tags = append(*tags, p.Type().String())
-	keyTypes.WithLabelValues(*tags...).Inc()
+	_ = "STUB: not implemented"
+	return
 }
 
 func (m *metricsTracer) ClosedConnection(dir network.Direction, duration time.Duration, cs network.ConnectionState, laddr ma.Multiaddr) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, metricshelper.GetDirection(dir))
-	*tags = appendConnectionState(*tags, cs)
-	*tags = append(*tags, metricshelper.GetIPVersion(laddr))
-	connsClosed.WithLabelValues(*tags...).Inc()
-	connDuration.WithLabelValues(*tags...).Observe(duration.Seconds())
+	_ = "STUB: not implemented"
+	return
 }
 
 func (m *metricsTracer) CompletedHandshake(t time.Duration, cs network.ConnectionState, laddr ma.Multiaddr) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = appendConnectionState(*tags, cs)
-	*tags = append(*tags, metricshelper.GetIPVersion(laddr))
-	connHandshakeLatency.WithLabelValues(*tags...).Observe(t.Seconds())
+	_ = "STUB: not implemented"
+	return
 }
 
 func (m *metricsTracer) FailedDialing(addr ma.Multiaddr, dialErr error, cause error) {
-	transport := metricshelper.GetTransport(addr)
-	e := "other"
-	// dial deadline exceeded or the the parent contexts deadline exceeded
-	if errors.Is(dialErr, context.DeadlineExceeded) || errors.Is(cause, context.DeadlineExceeded) {
-		e = "deadline"
-	} else if errors.Is(dialErr, context.Canceled) {
-		// dial was cancelled.
-		if errors.Is(cause, context.Canceled) {
-			// parent context was canceled
-			e = "application canceled"
-		} else if errors.Is(cause, errConcurrentDialSuccessful) {
-			e = "canceled: concurrent dial successful"
-		} else {
-			// something else
-			e = "canceled: other"
-		}
-	} else {
-		nerr, ok := dialErr.(net.Error)
-		if ok && nerr.Timeout() {
-			e = "timeout"
-		} else if strings.Contains(dialErr.Error(), "connect: connection refused") {
-			e = "connection refused"
-		}
-	}
-
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, transport, e)
-	*tags = append(*tags, metricshelper.GetIPVersion(addr))
-	dialError.WithLabelValues(*tags...).Inc()
+	_ = "STUB: not implemented"
+	return
 }
 
 func (m *metricsTracer) DialCompleted(success bool, totalDials int, latency time.Duration) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	if success {
-		*tags = append(*tags, "success")
-	} else {
-		*tags = append(*tags, "failed")
-	}
-
-	numDialLabels := [...]string{"0", "1", "2", "3", "4", "5", ">=6"}
-	var numDials string
-	if totalDials < len(numDialLabels) {
-		numDials = numDialLabels[totalDials]
-	} else {
-		numDials = numDialLabels[len(numDialLabels)-1]
-	}
-	*tags = append(*tags, numDials)
-	dialsPerPeer.WithLabelValues(*tags...).Inc()
-	dialLatency.WithLabelValues(*tags...).Observe(latency.Seconds())
+	_ = "STUB: not implemented"
+	return
 }
 
-func (m *metricsTracer) DialRankingDelay(d time.Duration) {
-	dialRankingDelay.Observe(d.Seconds())
-}
+func (m *metricsTracer) DialRankingDelay(d time.Duration) { _ = "STUB: not implemented"; return }
 
 func (m *metricsTracer) UpdatedBlackHoleSuccessCounter(name string, state BlackHoleState,
 	nextProbeAfter int, successFraction float64) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, name)
-
-	blackHoleSuccessCounterState.WithLabelValues(*tags...).Set(float64(state))
-	blackHoleSuccessCounterSuccessFraction.WithLabelValues(*tags...).Set(successFraction)
-	blackHoleSuccessCounterNextRequestAllowedAfter.WithLabelValues(*tags...).Set(float64(nextProbeAfter))
+	_ = "STUB: not implemented"
+	return
 }

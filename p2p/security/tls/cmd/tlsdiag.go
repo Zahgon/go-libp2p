@@ -14,7 +14,7 @@ func main() {
 	}
 
 	role := os.Args[1]
-	// remove the role argument from os.Args
+
 	os.Args = append([]string{os.Args[0]}, os.Args[2:]...)
 
 	var err error

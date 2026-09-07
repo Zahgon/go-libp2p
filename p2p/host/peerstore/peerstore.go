@@ -6,17 +6,11 @@ import (
 )
 
 func PeerInfos(ps pstore.Peerstore, peers peer.IDSlice) []peer.AddrInfo {
-	pi := make([]peer.AddrInfo, len(peers))
-	for i, p := range peers {
-		pi[i] = ps.PeerInfo(p)
-	}
-	return pi
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func PeerInfoIDs(pis []peer.AddrInfo) peer.IDSlice {
-	ps := make(peer.IDSlice, len(pis))
-	for i, pi := range pis {
-		ps[i] = pi.ID
-	}
-	return ps
+	_ = "STUB: not implemented"
+	return *new(peer.IDSlice)
 }

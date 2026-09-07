@@ -2,15 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/big"
 	"os"
 	"strconv"
 	"time"
@@ -62,7 +57,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
-	// Get peer information via redis
 	rClient := redis.NewClient(&redis.Options{
 		DialTimeout: testTimeout,
 		Addr:        redisAddr,
@@ -76,7 +70,6 @@ func main() {
 			log.Fatal("timeout waiting for redis")
 		}
 
-		// Wait for redis to be ready
 		_, err := rClient.Ping(ctx).Result()
 		if err == nil {
 			break
@@ -113,7 +106,6 @@ func main() {
 	}
 	options = append(options, libp2p.ListenAddrStrings(listenAddr))
 
-	// Skipped for certain transports
 	var skipMuxer bool
 	var skipSecureChannel bool
 	switch transport {
@@ -215,27 +207,4 @@ func main() {
 	}
 }
 
-func generateTLSConfig() *tls.Config {
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl := &x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{},
-		SignatureAlgorithm:    x509.SHA256WithRSA,
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().Add(time.Hour), // valid for an hour
-		BasicConstraintsValid: true,
-	}
-	certDER, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, priv.Public(), priv)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &tls.Config{
-		Certificates: []tls.Certificate{{
-			PrivateKey:  priv,
-			Certificate: [][]byte{certDER},
-		}},
-	}
-}
+func generateTLSConfig() *tls.Config { _ = "STUB: not implemented"; return nil }

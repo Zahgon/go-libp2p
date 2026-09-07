@@ -1,7 +1,6 @@
 package libp2pwebtransport
 
 import (
-	"errors"
 	"net"
 
 	"github.com/libp2p/go-libp2p/core/network"
@@ -20,13 +19,9 @@ type webtransportStream struct {
 
 var _ net.Conn = webtransportStream{}
 
-func (s webtransportStream) LocalAddr() net.Addr {
-	return s.wsess.LocalAddr()
-}
+func (s webtransportStream) LocalAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-func (s webtransportStream) RemoteAddr() net.Addr {
-	return s.wsess.RemoteAddr()
-}
+func (s webtransportStream) RemoteAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
 type stream struct {
 	*webtransport.Stream
@@ -34,63 +29,19 @@ type stream struct {
 
 var _ network.MuxedStream = stream{}
 
-func (s stream) Read(b []byte) (n int, err error) {
-	n, err = s.Stream.Read(b)
-	if err != nil {
-		var streamErr *webtransport.StreamError
-		if errors.As(err, &streamErr) {
-			err = &network.StreamError{
-				ErrorCode:      0,
-				Remote:         streamErr.Remote,
-				TransportError: err,
-			}
-		}
-	}
-	return n, err
-}
+func (s stream) Read(b []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (s stream) Write(b []byte) (n int, err error) {
-	n, err = s.Stream.Write(b)
-	if err != nil {
-		var streamErr *webtransport.StreamError
-		if errors.As(err, &streamErr) {
-			err = &network.StreamError{
-				ErrorCode:      0,
-				Remote:         streamErr.Remote,
-				TransportError: err,
-			}
-		}
-	}
-	return n, err
-}
+func (s stream) Write(b []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (s stream) Reset() error {
-	s.Stream.CancelRead(reset)
-	s.Stream.CancelWrite(reset)
-	return nil
-}
+func (s stream) Reset() error { _ = "STUB: not implemented"; return nil }
 
-// ResetWithError resets the stream ignoring the error code. Error codes aren't
-// specified for WebTransport as the current implementation of WebTransport in
-// browsers(https://www.ietf.org/archive/id/draft-kinnear-webtransport-http2-02.html)
-// only supports 1 byte error codes. For more details, see
-// https://github.com/libp2p/specs/blob/4eca305185c7aef219e936bef76c48b1ab0a8b43/error-codes/README.md?plain=1#L84
 func (s stream) ResetWithError(_ network.StreamErrorCode) error {
-	s.Stream.CancelRead(reset)
-	s.Stream.CancelWrite(reset)
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (s stream) Close() error {
-	s.Stream.CancelRead(reset)
-	return s.Stream.Close()
-}
+func (s stream) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (s stream) CloseRead() error {
-	s.Stream.CancelRead(reset)
-	return nil
-}
+func (s stream) CloseRead() error { _ = "STUB: not implemented"; return nil }
 
-func (s stream) CloseWrite() error {
-	return s.Stream.Close()
-}
+func (s stream) CloseWrite() error { _ = "STUB: not implemented"; return nil }

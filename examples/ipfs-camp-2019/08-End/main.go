@@ -27,9 +27,7 @@ type mdnsNotifee struct {
 	ctx context.Context
 }
 
-func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	m.h.Connect(m.ctx, pi)
-}
+func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) { _ = "STUB: not implemented"; return }
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())

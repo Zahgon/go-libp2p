@@ -17,20 +17,21 @@ type earlyDataHandler struct {
 var _ noise.EarlyDataHandler = &earlyDataHandler{}
 
 func newEarlyDataSender(earlyData *pb.NoiseExtensions) noise.EarlyDataHandler {
-	return &earlyDataHandler{earlyData: earlyData}
+	_ = "STUB: not implemented"
+	return *new(noise.EarlyDataHandler)
 }
 
 func newEarlyDataReceiver(receive func(*pb.NoiseExtensions) error) noise.EarlyDataHandler {
-	return &earlyDataHandler{receive: receive}
+	_ = "STUB: not implemented"
+	return *new(noise.EarlyDataHandler)
 }
 
 func (e *earlyDataHandler) Send(context.Context, net.Conn, peer.ID) *pb.NoiseExtensions {
-	return e.earlyData
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (e *earlyDataHandler) Received(_ context.Context, _ net.Conn, ext *pb.NoiseExtensions) error {
-	if e.receive == nil {
-		return nil
-	}
-	return e.receive(ext)
+	_ = "STUB: not implemented"
+	return nil
 }

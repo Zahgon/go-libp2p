@@ -5,7 +5,6 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/p2p/host/autonat/pb"
-	"github.com/libp2p/go-libp2p/p2p/metricshelper"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -77,22 +76,8 @@ type MetricsTracer interface {
 }
 
 func getResponseStatus(status pb.Message_ResponseStatus) string {
-	var s string
-	switch status {
-	case pb.Message_OK:
-		s = "ok"
-	case pb.Message_E_DIAL_ERROR:
-		s = "dial error"
-	case pb.Message_E_DIAL_REFUSED:
-		s = "dial refused"
-	case pb.Message_E_BAD_REQUEST:
-		s = "bad request"
-	case pb.Message_E_INTERNAL_ERROR:
-		s = "internal error"
-	default:
-		s = "unknown"
-	}
-	return s
+	_ = "STUB: not implemented"
+	return ""
 }
 
 const (
@@ -112,51 +97,35 @@ type metricsTracerSetting struct {
 type MetricsTracerOption func(*metricsTracerSetting)
 
 func WithRegisterer(reg prometheus.Registerer) MetricsTracerOption {
-	return func(s *metricsTracerSetting) {
-		if reg != nil {
-			s.reg = reg
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracerOption)
 }
 
 func NewMetricsTracer(opts ...MetricsTracerOption) MetricsTracer {
-	setting := &metricsTracerSetting{reg: prometheus.DefaultRegisterer}
-	for _, opt := range opts {
-		opt(setting)
-	}
-	metricshelper.RegisterCollectors(setting.reg, collectors...)
-	return &metricsTracer{}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracer)
 }
 
 func (mt *metricsTracer) ReachabilityStatus(status network.Reachability) {
-	reachabilityStatus.Set(float64(status))
+	_ = "STUB: not implemented"
+	return
 }
 
 func (mt *metricsTracer) ReachabilityStatusConfidence(confidence int) {
-	reachabilityStatusConfidence.Set(float64(confidence))
+	_ = "STUB: not implemented"
+	return
 }
 
 func (mt *metricsTracer) ReceivedDialResponse(status pb.Message_ResponseStatus) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, getResponseStatus(status))
-	receivedDialResponseTotal.WithLabelValues(*tags...).Inc()
+	_ = "STUB: not implemented"
+	return
 }
 
 func (mt *metricsTracer) OutgoingDialResponse(status pb.Message_ResponseStatus) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, getResponseStatus(status))
-	outgoingDialResponseTotal.WithLabelValues(*tags...).Inc()
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) OutgoingDialRefused(reason string) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, reason)
-	outgoingDialRefusedTotal.WithLabelValues(*tags...).Inc()
-}
+func (mt *metricsTracer) OutgoingDialRefused(reason string) { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) NextProbeTime(t time.Time) {
-	nextProbeTimestamp.Set(float64(t.Unix()))
-}
+func (mt *metricsTracer) NextProbeTime(t time.Time) { _ = "STUB: not implemented"; return }

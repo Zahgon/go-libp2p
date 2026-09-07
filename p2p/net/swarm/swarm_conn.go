@@ -3,9 +3,7 @@ package swarm
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
-	"time"
 
 	ic "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -15,13 +13,8 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-// TODO: Put this elsewhere.
-
-// ErrConnClosed is returned when operating on a closed connection.
 var ErrConnClosed = errors.New("connection closed")
 
-// Conn is the connection type used by swarm. In general, you won't use this
-// type directly.
 type Conn struct {
 	id    uint64
 	conn  transport.CapableConn
@@ -40,255 +33,59 @@ type Conn struct {
 
 var _ network.Conn = &Conn{}
 
-func (c *Conn) As(target any) bool {
-	return c.conn.As(target)
-}
+func (c *Conn) As(target any) bool { _ = "STUB: not implemented"; return false }
 
-func (c *Conn) IsClosed() bool {
-	return c.conn.IsClosed()
-}
+func (c *Conn) IsClosed() bool { _ = "STUB: not implemented"; return false }
 
-func (c *Conn) ID() string {
-	// format: <first 10 chars of peer id>-<global conn ordinal>
-	return fmt.Sprintf("%s-%d", c.RemotePeer().String()[:10], c.id)
-}
+func (c *Conn) ID() string { _ = "STUB: not implemented"; return "" }
 
-// Close closes this connection. It does not wait for the Disconnected
-// notification to be dispatched to Notifiees: doClose spawns a goroutine for
-// that, tracked by swarm.refs, so Close is safe to call from inside a
-// Notifiee.Connected handler without deadlocking.
-func (c *Conn) Close() error {
-	c.closeOnce.Do(func() {
-		c.doClose(0)
-	})
-	return c.err
-}
+func (c *Conn) Close() error { _ = "STUB: not implemented"; return nil }
 
 func (c *Conn) CloseWithError(errCode network.ConnErrorCode) error {
-	c.closeOnce.Do(func() {
-		c.doClose(errCode)
-	})
-	return c.err
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (c *Conn) doClose(errCode network.ConnErrorCode) {
-	c.swarm.removeConn(c)
+func (c *Conn) doClose(errCode network.ConnErrorCode) { _ = "STUB: not implemented"; return }
 
-	// Prevent new streams from opening.
-	c.streams.Lock()
-	streams := c.streams.m
-	c.streams.m = nil
-	c.streams.Unlock()
+func (c *Conn) removeStream(s *Stream) { _ = "STUB: not implemented"; return }
 
-	if errCode != 0 {
-		c.err = c.conn.CloseWithError(errCode)
-	} else {
-		c.err = c.conn.Close()
-	}
+func (c *Conn) start() { _ = "STUB: not implemented"; return }
 
-	// This is just for cleaning up state. The connection has already been closed.
-	// We *could* optimize this but it really isn't worth it.
-	for s := range streams {
-		s.Reset()
-	}
+func (c *Conn) String() string { _ = "STUB: not implemented"; return "" }
 
-	// Dispatch the close notifications in a goroutine. Two deadlocks are
-	// avoided by this:
-	//   - A PeerConnectednessChanged subscriber that calls Conn.Close would
-	//     otherwise call RemoveConn synchronously, blocking on the emitter's
-	//     event channel while the run loop is itself blocked waiting for the
-	//     subscriber to return.
-	//   - A Notifiee.Disconnected handler that calls Conn.Close (which is a
-	//     misuse — Disconnected fires because the conn is already closing)
-	//     would otherwise re-enter closeOnce.Do while the in-flight doClose
-	//     still holds it, deadlocking on sync.Once's internal mutex. We
-	//     tolerate the misuse rather than deadlock the caller.
-	// The s.refs ref added in addConn is released here.
-	go func() {
-		defer c.swarm.refs.Done()
-		c.swarm.connectionEventsEmitter.RemoveConn(c)
-	}()
-}
+func (c *Conn) LocalMultiaddr() ma.Multiaddr { _ = "STUB: not implemented"; return *new(ma.Multiaddr) }
 
-func (c *Conn) removeStream(s *Stream) {
-	c.streams.Lock()
-	c.stat.NumStreams--
-	delete(c.streams.m, s)
-	c.streams.Unlock()
-	s.scope.Done()
-}
+func (c *Conn) LocalPeer() peer.ID { _ = "STUB: not implemented"; return *new(peer.ID) }
 
-// listens for new streams.
-//
-// The caller must take a swarm ref before calling. This function decrements the
-// swarm ref count.
-func (c *Conn) start() {
-	go func() {
-		defer c.swarm.refs.Done()
-		defer c.Close()
-		for {
-			ts, err := c.conn.AcceptStream()
-			if err != nil {
-				return
-			}
-			scope, err := c.swarm.ResourceManager().OpenStream(c.RemotePeer(), network.DirInbound)
-			if err != nil {
-				ts.ResetWithError(network.StreamResourceLimitExceeded)
-				continue
-			}
-			c.swarm.refs.Add(1)
-			go func() {
-				s, err := c.addStream(ts, network.DirInbound, scope)
+func (c *Conn) RemoteMultiaddr() ma.Multiaddr { _ = "STUB: not implemented"; return *new(ma.Multiaddr) }
 
-				// Don't defer this. We don't want to block
-				// swarm shutdown on the connection handler.
-				c.swarm.refs.Done()
+func (c *Conn) RemotePeer() peer.ID { _ = "STUB: not implemented"; return *new(peer.ID) }
 
-				// We only get an error here when the swarm is closed or closing.
-				if err != nil {
-					scope.Done()
-					return
-				}
+func (c *Conn) RemotePublicKey() ic.PubKey { _ = "STUB: not implemented"; return *new(ic.PubKey) }
 
-				if h := c.swarm.StreamHandler(); h != nil {
-					h(s)
-				}
-				s.completeAcceptStreamGoroutine()
-			}()
-		}
-	}()
-}
-
-func (c *Conn) String() string {
-	return fmt.Sprintf(
-		"<swarm.Conn[%T] %s (%s) <-> %s (%s)>",
-		c.conn.Transport(),
-		c.conn.LocalMultiaddr(),
-		c.conn.LocalPeer(),
-		c.conn.RemoteMultiaddr(),
-		c.conn.RemotePeer(),
-	)
-}
-
-// LocalMultiaddr is the Multiaddr on this side
-func (c *Conn) LocalMultiaddr() ma.Multiaddr {
-	return c.conn.LocalMultiaddr()
-}
-
-// LocalPeer is the Peer on our side of the connection
-func (c *Conn) LocalPeer() peer.ID {
-	return c.conn.LocalPeer()
-}
-
-// RemoteMultiaddr is the Multiaddr on the remote side
-func (c *Conn) RemoteMultiaddr() ma.Multiaddr {
-	return c.conn.RemoteMultiaddr()
-}
-
-// RemotePeer is the Peer on the remote side
-func (c *Conn) RemotePeer() peer.ID {
-	return c.conn.RemotePeer()
-}
-
-// RemotePublicKey is the public key of the peer on the remote side
-func (c *Conn) RemotePublicKey() ic.PubKey {
-	return c.conn.RemotePublicKey()
-}
-
-// ConnState is the security connection state. including early data result.
-// Empty if not supported.
 func (c *Conn) ConnState() network.ConnectionState {
-	return c.conn.ConnState()
+	_ = "STUB: not implemented"
+	return *new(network.ConnectionState)
 }
 
-// Stat returns metadata pertaining to this connection
-func (c *Conn) Stat() network.ConnStats {
-	c.streams.Lock()
-	defer c.streams.Unlock()
-	return c.stat
-}
+func (c *Conn) Stat() network.ConnStats { _ = "STUB: not implemented"; return *new(network.ConnStats) }
 
-// NewStream returns a new Stream from this connection
 func (c *Conn) NewStream(ctx context.Context) (network.Stream, error) {
-	if c.Stat().Limited {
-		if useLimited, _ := network.GetAllowLimitedConn(ctx); !useLimited {
-			return nil, network.ErrLimitedConn
-		}
-	}
-
-	scope, err := c.swarm.ResourceManager().OpenStream(c.RemotePeer(), network.DirOutbound)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, ok := ctx.Deadline(); !ok {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, defaultNewStreamTimeout)
-		defer cancel()
-	}
-
-	s, err := c.openAndAddStream(ctx, scope)
-	if err != nil {
-		scope.Done()
-		if errors.Is(err, context.DeadlineExceeded) {
-			err = fmt.Errorf("timed out: %w", err)
-		}
-		return nil, err
-	}
-	return s, nil
+	_ = "STUB: not implemented"
+	return *new(network.Stream), nil
 }
 
 func (c *Conn) openAndAddStream(ctx context.Context, scope network.StreamManagementScope) (network.Stream, error) {
-	ts, err := c.conn.OpenStream(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return c.addStream(ts, network.DirOutbound, scope)
+	_ = "STUB: not implemented"
+	return *new(network.Stream), nil
 }
 
 func (c *Conn) addStream(ts network.MuxedStream, dir network.Direction, scope network.StreamManagementScope) (*Stream, error) {
-	c.streams.Lock()
-	// Are we still online?
-	if c.streams.m == nil {
-		c.streams.Unlock()
-		ts.Reset()
-		return nil, ErrConnClosed
-	}
-
-	// Wrap and register the stream.
-	s := &Stream{
-		stream: ts,
-		conn:   c,
-		scope:  scope,
-		stat: network.Stats{
-			Direction: dir,
-			Opened:    time.Now(),
-		},
-		id:                             c.swarm.nextStreamID.Add(1),
-		acceptStreamGoroutineCompleted: dir != network.DirInbound,
-	}
-	c.stat.NumStreams++
-	c.streams.m[s] = struct{}{}
-
-	// Released once the stream disconnect notifications have finished
-	// firing (in Swarm.remove).
-	c.swarm.refs.Add(1)
-
-	c.streams.Unlock()
-	return s, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-// GetStreams returns the streams associated with this connection.
-func (c *Conn) GetStreams() []network.Stream {
-	c.streams.Lock()
-	defer c.streams.Unlock()
-	streams := make([]network.Stream, 0, len(c.streams.m))
-	for s := range c.streams.m {
-		streams = append(streams, s)
-	}
-	return streams
-}
+func (c *Conn) GetStreams() []network.Stream { _ = "STUB: not implemented"; return nil }
 
-func (c *Conn) Scope() network.ConnScope {
-	return c.conn.Scope()
-}
+func (c *Conn) Scope() network.ConnScope { _ = "STUB: not implemented"; return *new(network.ConnScope) }

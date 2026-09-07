@@ -1,41 +1,25 @@
 package simlibp2p
 
 import (
-	"context"
-	"crypto/rand"
-	"fmt"
 	"net"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p/config"
-	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/libp2p/go-libp2p/core/network"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/peerstore"
 	blankhost "github.com/libp2p/go-libp2p/p2p/host/blank"
-	"github.com/libp2p/go-libp2p/p2p/host/eventbus"
-	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoremem"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
-	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"github.com/libp2p/go-libp2p/p2p/protocol/identify"
-	libp2pquic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	"github.com/libp2p/go-libp2p/p2p/transport/quicreuse"
 	"github.com/marcopolo/simnet"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/quic-go/quic-go"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func MustNewHost(t *testing.T, opts ...libp2p.Option) host.Host {
-	t.Helper()
-	h, err := libp2p.New(opts...)
-	require.NoError(t, err)
-	return h
+	_ = "STUB: not implemented"
+	return *new(host.Host)
 }
 
 type MockSourceIPSelector struct {
@@ -43,35 +27,15 @@ type MockSourceIPSelector struct {
 }
 
 func (m *MockSourceIPSelector) PreferredSourceIPForDestination(_ *net.UDPAddr) (net.IP, error) {
-	return *m.ip.Load(), nil
+	_ = "STUB: not implemented"
+	return *new(net.IP), nil
 }
 
 const OneMbps = 1_000_000
 
 func QUICSimnet(simnet *simnet.Simnet, linkSettings simnet.NodeBiDiLinkSettings, quicReuseOpts ...quicreuse.Option) libp2p.Option {
-	m := &MockSourceIPSelector{}
-	quicReuseOpts = append(quicReuseOpts,
-		quicreuse.OverrideSourceIPSelector(func() (quicreuse.SourceIPSelector, error) {
-			return m, nil
-		}),
-		quicreuse.OverrideListenUDP(func(_ string, address *net.UDPAddr) (net.PacketConn, error) {
-			m.ip.Store(&address.IP)
-			c := simnet.NewEndpoint(address, linkSettings)
-			return c, nil
-		}))
-	return libp2p.QUICReuse(
-		func(l fx.Lifecycle, statelessResetKey quic.StatelessResetKey, tokenKey quic.TokenGeneratorKey, opts ...quicreuse.Option) (*quicreuse.ConnManager, error) {
-			cm, err := quicreuse.NewConnManager(statelessResetKey, tokenKey, opts...)
-			if err != nil {
-				return nil, err
-			}
-			l.Append(fx.StopHook(func() error {
-				// When we pass in our own conn manager, we need to close it manually (??)
-				// TODO: this seems like a bug
-				return cm.Close()
-			}))
-			return cm, nil
-		}, quicReuseOpts...)
+	_ = "STUB: not implemented"
+	return *new(libp2p.Option)
 }
 
 type wrappedHost struct {
@@ -82,14 +46,7 @@ type wrappedHost struct {
 	connMgr   *connmgr.BasicConnMgr
 }
 
-func (h *wrappedHost) Close() error {
-	h.BlankHost.Close()
-	h.ps.Close()
-	h.quicCM.Close()
-	h.idService.Close()
-	h.connMgr.Close()
-	return nil
-}
+func (h *wrappedHost) Close() error { _ = "STUB: not implemented"; return nil }
 
 type BlankHostOpts struct {
 	ConnMgr         *connmgr.BasicConnMgr
@@ -100,90 +57,8 @@ type BlankHostOpts struct {
 }
 
 func newBlankHost(opts BlankHostOpts) (*wrappedHost, error) {
-	priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
-	if err != nil {
-		return nil, err
-	}
-	id, err := peer.IDFromPrivateKey(priv)
-	if err != nil {
-		return nil, err
-	}
-	ps, err := pstoremem.NewPeerstore()
-	if err != nil {
-		return nil, err
-	}
-	ps.AddPrivKey(id, priv)
-
-	eb := eventbus.NewBus()
-
-	swarm, err := swarm.NewSwarm(id, ps, eb)
-	if err != nil {
-		return nil, err
-	}
-
-	statelessResetKey, err := config.PrivKeyToStatelessResetKey(priv)
-	if err != nil {
-		return nil, err
-	}
-	tokenGeneratorKey, err := config.PrivKeyToTokenGeneratorKey(priv)
-	if err != nil {
-		return nil, err
-	}
-	m := &MockSourceIPSelector{}
-	quicReuseOpts := append(opts.quicReuseOpts,
-		quicreuse.OverrideSourceIPSelector(func() (quicreuse.SourceIPSelector, error) {
-			return m, nil
-		}),
-		quicreuse.OverrideListenUDP(func(_ string, address *net.UDPAddr) (net.PacketConn, error) {
-			m.ip.Store(&address.IP)
-			c := opts.simnet.NewEndpoint(address, opts.linkSettings)
-			return c, nil
-		}),
-	)
-
-	quicCM, err := quicreuse.NewConnManager(statelessResetKey, tokenGeneratorKey, quicReuseOpts...)
-	if err != nil {
-		return nil, err
-	}
-	quicTr, err := libp2pquic.NewTransport(priv, quicCM, nil, nil, &network.NullResourceManager{})
-	if err != nil {
-		return nil, err
-	}
-
-	err = swarm.AddTransport(quicTr)
-	if err != nil {
-		return nil, err
-	}
-	err = swarm.Listen(opts.listenMultiaddr)
-	if err != nil {
-		return nil, err
-	}
-
-	var cm *connmgr.BasicConnMgr
-	if opts.ConnMgr == nil {
-		cm, err = connmgr.NewConnManager(100, 200, connmgr.WithGracePeriod(time.Second*10))
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		cm = opts.ConnMgr
-	}
-
-	host := blankhost.NewBlankHost(swarm, blankhost.WithEventBus(eb), blankhost.WithConnectionManager(cm))
-
-	idService, err := identify.NewIDService(host)
-	if err != nil {
-		return nil, err
-	}
-	idService.Start()
-
-	return &wrappedHost{
-		BlankHost: *host,
-		ps:        ps,
-		quicCM:    quicCM,
-		idService: idService,
-		connMgr:   cm,
-	}, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 type NodeLinkSettingsAndCount struct {
@@ -210,79 +85,11 @@ type NetworkSettings struct {
 type LatencyFunc func(*simnet.Packet) time.Duration
 
 func SimpleLibp2pNetwork(linkSettings []NodeLinkSettingsAndCount, latencyFunc LatencyFunc, networkSettings NetworkSettings) (*simnet.Simnet, *SimpleLibp2pNetworkMeta, error) {
-	nw := &simnet.Simnet{
-		LatencyFunc: latencyFunc,
-	}
-	meta := &SimpleLibp2pNetworkMeta{
-		AddrToNode: make(map[string]HostAndIdx),
-	}
-
-	for _, l := range linkSettings {
-		for i := 0; i < l.Count; i++ {
-			idx := len(meta.Nodes)
-			ip := simnet.IntToPublicIPv4(idx)
-			addr := fmt.Sprintf("/ip4/%s/udp/8000/quic-v1", ip)
-			var h host.Host
-			var err error
-			var quicReuseOpts []quicreuse.Option
-			if networkSettings.QUICReuseOptsForHostIdx != nil {
-				quicReuseOpts = networkSettings.QUICReuseOptsForHostIdx(idx)
-			}
-			if networkSettings.UseBlankHost {
-				var opts BlankHostOpts
-				if networkSettings.BlankHostOptsForHostIdx != nil {
-					opts = networkSettings.BlankHostOptsForHostIdx(idx)
-				}
-
-				h, err = newBlankHost(BlankHostOpts{
-					listenMultiaddr: multiaddr.StringCast(addr),
-					simnet:          nw,
-					linkSettings:    l.LinkSettings,
-					quicReuseOpts:   quicReuseOpts,
-					ConnMgr:         opts.ConnMgr,
-				})
-			} else {
-				h, err = libp2p.New(
-					libp2p.ListenAddrStrings(addr),
-					QUICSimnet(nw, l.LinkSettings, quicReuseOpts...),
-					// TODO: Currently using identify address discovery stalls
-					// synctest
-					libp2p.DisableIdentifyAddressDiscovery(),
-					libp2p.ResourceManager(&network.NullResourceManager{}),
-				)
-			}
-			if err != nil {
-				return nil, nil, err
-			}
-			meta.Nodes = append(meta.Nodes, h)
-			meta.AddrToNode[addr] = HostAndIdx{Host: h, Idx: idx}
-		}
-	}
-
-	return nw, meta, nil
+	_ = "STUB: not implemented"
+	return nil, nil, nil
 }
 
-// GetBasicHostPair gets a new pair of hosts.
-// The first host initiates the connection to the second host.
 func GetBasicHostPair(t *testing.T) (host.Host, host.Host) {
-	network, meta, err := SimpleLibp2pNetwork([]NodeLinkSettingsAndCount{{
-		LinkSettings: simnet.NodeBiDiLinkSettings{
-			Downlink: simnet.LinkSettings{BitsPerSecond: 20 * OneMbps},
-			Uplink:   simnet.LinkSettings{BitsPerSecond: 20 * OneMbps},
-		}, Count: 2},
-	}, simnet.StaticLatency(100/2*time.Millisecond), NetworkSettings{})
-	require.NoError(t, err)
-	network.Start()
-	t.Cleanup(func() {
-		network.Close()
-	})
-
-	h1 := meta.Nodes[0]
-	h2 := meta.Nodes[1]
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	h2pi := h2.Peerstore().PeerInfo(h2.ID())
-	require.NoError(t, h1.Connect(ctx, h2pi))
-	return h1, h2
+	_ = "STUB: not implemented"
+	return *new(host.Host), *new(host.Host)
 }

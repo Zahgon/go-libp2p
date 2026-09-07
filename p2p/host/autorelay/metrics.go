@@ -1,11 +1,6 @@
 package autorelay
 
 import (
-	"errors"
-
-	"github.com/libp2p/go-libp2p/p2p/metricshelper"
-	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/client"
-	pbv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/pb"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -120,7 +115,6 @@ const (
 	stopped
 )
 
-// MetricsTracer is the interface for tracking metrics for autorelay
 type MetricsTracer interface {
 	RelayFinderStatus(isActive bool)
 
@@ -152,222 +146,91 @@ type metricsTracerSetting struct {
 type MetricsTracerOption func(*metricsTracerSetting)
 
 func WithRegisterer(reg prometheus.Registerer) MetricsTracerOption {
-	return func(s *metricsTracerSetting) {
-		if reg != nil {
-			s.reg = reg
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracerOption)
 }
 
 func NewMetricsTracer(opts ...MetricsTracerOption) MetricsTracer {
-	setting := &metricsTracerSetting{reg: prometheus.DefaultRegisterer}
-	for _, opt := range opts {
-		opt(setting)
-	}
-	metricshelper.RegisterCollectors(setting.reg, collectors...)
-
-	// Initialise these counters to 0 otherwise the first reservation requests aren't handled
-	// correctly when using promql increase function
-	reservationRequestsOutcomeTotal.WithLabelValues("refresh", "success")
-	reservationRequestsOutcomeTotal.WithLabelValues("new", "success")
-	candidatesCircuitV2SupportTotal.WithLabelValues("yes")
-	candidatesCircuitV2SupportTotal.WithLabelValues("no")
-	return &metricsTracer{}
+	_ = "STUB: not implemented"
+	return *new(MetricsTracer)
 }
 
-func (mt *metricsTracer) RelayFinderStatus(isActive bool) {
-	if isActive {
-		status.Set(1)
-	} else {
-		status.Set(0)
-	}
-}
+func (mt *metricsTracer) RelayFinderStatus(isActive bool) { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) ReservationEnded(cnt int) {
-	reservationsClosedTotal.Add(float64(cnt))
-}
+func (mt *metricsTracer) ReservationEnded(cnt int) { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) ReservationOpened(cnt int) {
-	reservationsOpenedTotal.Add(float64(cnt))
-}
+func (mt *metricsTracer) ReservationOpened(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *metricsTracer) ReservationRequestFinished(isRefresh bool, err error) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	if isRefresh {
-		*tags = append(*tags, "refresh")
-	} else {
-		*tags = append(*tags, "new")
-	}
-	*tags = append(*tags, getReservationRequestStatus(err))
-	reservationRequestsOutcomeTotal.WithLabelValues(*tags...).Inc()
-
-	if !isRefresh && err == nil {
-		reservationsOpenedTotal.Inc()
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) RelayAddressUpdated() {
-	relayAddressesUpdatedTotal.Inc()
-}
+func (mt *metricsTracer) RelayAddressUpdated() { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) RelayAddressCount(cnt int) {
-	relayAddressesCount.Set(float64(cnt))
-}
+func (mt *metricsTracer) RelayAddressCount(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *metricsTracer) CandidateChecked(supportsCircuitV2 bool) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	if supportsCircuitV2 {
-		*tags = append(*tags, "yes")
-	} else {
-		*tags = append(*tags, "no")
-	}
-	candidatesCircuitV2SupportTotal.WithLabelValues(*tags...).Inc()
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) CandidateAdded(cnt int) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, "added")
-	candidatesTotal.WithLabelValues(*tags...).Add(float64(cnt))
-}
+func (mt *metricsTracer) CandidateAdded(cnt int) { _ = "STUB: not implemented"; return }
 
-func (mt *metricsTracer) CandidateRemoved(cnt int) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-	*tags = append(*tags, "removed")
-	candidatesTotal.WithLabelValues(*tags...).Add(float64(cnt))
-}
+func (mt *metricsTracer) CandidateRemoved(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *metricsTracer) CandidateLoopState(state candidateLoopState) {
-	candLoopState.Set(float64(state))
+	_ = "STUB: not implemented"
+	return
 }
 
 func (mt *metricsTracer) ScheduledWorkUpdated(scheduledWork *scheduledWorkTimes) {
-	tags := metricshelper.GetStringSlice()
-	defer metricshelper.PutStringSlice(tags)
-
-	*tags = append(*tags, "allowed peer source call")
-	scheduledWorkTime.WithLabelValues(*tags...).Set(float64(scheduledWork.nextAllowedCallToPeerSource.Unix()))
-	*tags = (*tags)[:0]
-
-	*tags = append(*tags, "reservation refresh")
-	scheduledWorkTime.WithLabelValues(*tags...).Set(float64(scheduledWork.nextRefresh.Unix()))
-	*tags = (*tags)[:0]
-
-	*tags = append(*tags, "clear backoff")
-	scheduledWorkTime.WithLabelValues(*tags...).Set(float64(scheduledWork.nextBackoff.Unix()))
-	*tags = (*tags)[:0]
-
-	*tags = append(*tags, "old candidate check")
-	scheduledWorkTime.WithLabelValues(*tags...).Set(float64(scheduledWork.nextOldCandidateCheck.Unix()))
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *metricsTracer) DesiredReservations(cnt int) {
-	desiredReservations.Set(float64(cnt))
-}
+func (mt *metricsTracer) DesiredReservations(cnt int) { _ = "STUB: not implemented"; return }
 
-func getReservationRequestStatus(err error) string {
-	if err == nil {
-		return "success"
-	}
+func getReservationRequestStatus(err error) string { _ = "STUB: not implemented"; return "" }
 
-	status := "err other"
-	var re client.ReservationError
-	if errors.As(err, &re) {
-		switch re.Status {
-		case pbv2.Status_CONNECTION_FAILED:
-			return "connection failed"
-		case pbv2.Status_MALFORMED_MESSAGE:
-			return "malformed message"
-		case pbv2.Status_RESERVATION_REFUSED:
-			return "reservation refused"
-		case pbv2.Status_PERMISSION_DENIED:
-			return "permission denied"
-		case pbv2.Status_RESOURCE_LIMIT_EXCEEDED:
-			return "resource limit exceeded"
-		}
-	}
-	return status
-}
-
-// wrappedMetricsTracer wraps MetricsTracer and ignores all calls when mt is nil
 type wrappedMetricsTracer struct {
 	mt MetricsTracer
 }
 
 var _ MetricsTracer = &wrappedMetricsTracer{}
 
-func (mt *wrappedMetricsTracer) RelayFinderStatus(isActive bool) {
-	if mt.mt != nil {
-		mt.mt.RelayFinderStatus(isActive)
-	}
-}
+func (mt *wrappedMetricsTracer) RelayFinderStatus(isActive bool) { _ = "STUB: not implemented"; return }
 
-func (mt *wrappedMetricsTracer) ReservationEnded(cnt int) {
-	if mt.mt != nil {
-		mt.mt.ReservationEnded(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) ReservationEnded(cnt int) { _ = "STUB: not implemented"; return }
 
-func (mt *wrappedMetricsTracer) ReservationOpened(cnt int) {
-	if mt.mt != nil {
-		mt.mt.ReservationOpened(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) ReservationOpened(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *wrappedMetricsTracer) ReservationRequestFinished(isRefresh bool, err error) {
-	if mt.mt != nil {
-		mt.mt.ReservationRequestFinished(isRefresh, err)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *wrappedMetricsTracer) RelayAddressUpdated() {
-	if mt.mt != nil {
-		mt.mt.RelayAddressUpdated()
-	}
-}
+func (mt *wrappedMetricsTracer) RelayAddressUpdated() { _ = "STUB: not implemented"; return }
 
-func (mt *wrappedMetricsTracer) RelayAddressCount(cnt int) {
-	if mt.mt != nil {
-		mt.mt.RelayAddressCount(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) RelayAddressCount(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *wrappedMetricsTracer) CandidateChecked(supportsCircuitV2 bool) {
-	if mt.mt != nil {
-		mt.mt.CandidateChecked(supportsCircuitV2)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *wrappedMetricsTracer) CandidateAdded(cnt int) {
-	if mt.mt != nil {
-		mt.mt.CandidateAdded(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) CandidateAdded(cnt int) { _ = "STUB: not implemented"; return }
 
-func (mt *wrappedMetricsTracer) CandidateRemoved(cnt int) {
-	if mt.mt != nil {
-		mt.mt.CandidateRemoved(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) CandidateRemoved(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *wrappedMetricsTracer) ScheduledWorkUpdated(scheduledWork *scheduledWorkTimes) {
-	if mt.mt != nil {
-		mt.mt.ScheduledWorkUpdated(scheduledWork)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (mt *wrappedMetricsTracer) DesiredReservations(cnt int) {
-	if mt.mt != nil {
-		mt.mt.DesiredReservations(cnt)
-	}
-}
+func (mt *wrappedMetricsTracer) DesiredReservations(cnt int) { _ = "STUB: not implemented"; return }
 
 func (mt *wrappedMetricsTracer) CandidateLoopState(state candidateLoopState) {
-	if mt.mt != nil {
-		mt.mt.CandidateLoopState(state)
-	}
+	_ = "STUB: not implemented"
+	return
 }

@@ -2,11 +2,8 @@ package udpmux
 
 import (
 	"context"
-	"errors"
 	"net"
 	"time"
-
-	pool "github.com/libp2p/go-buffer-pool"
 )
 
 type packet struct {
@@ -18,10 +15,6 @@ var _ net.PacketConn = &muxedConnection{}
 
 const queueLen = 128
 
-// muxedConnection provides a net.PacketConn abstraction
-// over packetQueue and adds the ability to store addresses
-// from which this connection (indexed by its local ufrag)
-// received data.
 type muxedConnection struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -33,87 +26,33 @@ type muxedConnection struct {
 var _ net.PacketConn = &muxedConnection{}
 
 func newMuxedConnection(mux *UDPMux, localUfrag string) *muxedConnection {
-	ctx, cancel := context.WithCancel(mux.ctx)
-	return &muxedConnection{
-		ctx:        ctx,
-		cancel:     cancel,
-		queue:      make(chan packet, queueLen),
-		mux:        mux,
-		localUfrag: localUfrag,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (c *muxedConnection) Push(buf []byte, addr net.Addr) error {
-	if c.ctx.Err() != nil {
-		return errors.New("closed")
-	}
-	select {
-	case c.queue <- packet{buf: buf, addr: addr}:
-		return nil
-	default:
-		return errors.New("queue full")
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (c *muxedConnection) ReadFrom(buf []byte) (int, net.Addr, error) {
-	select {
-	case p := <-c.queue:
-		n := copy(buf, p.buf) // This might discard parts of the packet, if p is too short
-		if n < len(p.buf) {
-			log.Debug("short read", "had", len(p.buf), "read", n)
-		}
-		pool.Put(p.buf)
-		return n, p.addr, nil
-	case <-c.ctx.Done():
-		return 0, nil, c.ctx.Err()
-	}
+	_ = "STUB: not implemented"
+	return 0, *new(net.Addr), nil
 }
 
 func (c *muxedConnection) WriteTo(p []byte, addr net.Addr) (n int, err error) {
-	return c.mux.writeTo(p, addr)
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-func (c *muxedConnection) Close() error {
-	if c.ctx.Err() != nil {
-		return nil
-	}
-	// mux calls close to actually close the connection
-	//
-	// Removing the connection from the mux or closing the connection
-	// must trigger the other.
-	// Doing this here ensures we don't need to call both RemoveConnByUfrag
-	// and close on all code paths.
-	c.mux.RemoveConnByUfrag(c.localUfrag)
-	return nil
-}
+func (c *muxedConnection) Close() error { _ = "STUB: not implemented"; return nil }
 
-// closes the connection. Must only be called by the mux.
-func (c *muxedConnection) close() {
-	c.cancel()
-	// drain the packet queue
-	for {
-		select {
-		case p := <-c.queue:
-			pool.Put(p.buf)
-		default:
-			return
-		}
-	}
-}
+func (c *muxedConnection) close() { _ = "STUB: not implemented"; return }
 
-func (c *muxedConnection) LocalAddr() net.Addr { return c.mux.socket.LocalAddr() }
+func (c *muxedConnection) LocalAddr() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-func (*muxedConnection) SetDeadline(_ time.Time) error {
-	// no deadline is desired here
-	return nil
-}
+func (*muxedConnection) SetDeadline(_ time.Time) error { _ = "STUB: not implemented"; return nil }
 
-func (*muxedConnection) SetReadDeadline(_ time.Time) error {
-	// no read deadline is desired here
-	return nil
-}
+func (*muxedConnection) SetReadDeadline(_ time.Time) error { _ = "STUB: not implemented"; return nil }
 
-func (*muxedConnection) SetWriteDeadline(_ time.Time) error {
-	// no write deadline is desired here
-	return nil
-}
+func (*muxedConnection) SetWriteDeadline(_ time.Time) error { _ = "STUB: not implemented"; return nil }

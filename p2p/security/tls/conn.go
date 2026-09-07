@@ -20,18 +20,13 @@ type conn struct {
 
 var _ sec.SecureConn = &conn{}
 
-func (c *conn) LocalPeer() peer.ID {
-	return c.localPeer
-}
+func (c *conn) LocalPeer() peer.ID { _ = "STUB: not implemented"; return *new(peer.ID) }
 
-func (c *conn) RemotePeer() peer.ID {
-	return c.remotePeer
-}
+func (c *conn) RemotePeer() peer.ID { _ = "STUB: not implemented"; return *new(peer.ID) }
 
-func (c *conn) RemotePublicKey() ci.PubKey {
-	return c.remotePubKey
-}
+func (c *conn) RemotePublicKey() ci.PubKey { _ = "STUB: not implemented"; return *new(ci.PubKey) }
 
 func (c *conn) ConnState() network.ConnectionState {
-	return c.connectionState
+	_ = "STUB: not implemented"
+	return *new(network.ConnectionState)
 }

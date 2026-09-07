@@ -2,10 +2,4 @@
 
 package rcmgr
 
-import (
-	"math"
-)
-
-func getNumFDs() int {
-	return math.MaxInt
-}
+func getNumFDs() int { _ = "STUB: not implemented"; return 0 }

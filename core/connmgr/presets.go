@@ -1,67 +1,22 @@
 package connmgr
 
 import (
-	"math"
 	"time"
 )
 
-// DecayNone applies no decay.
-func DecayNone() DecayFn {
-	return func(value DecayingValue) (_ int, rm bool) {
-		return value.Value, false
-	}
-}
+func DecayNone() DecayFn { _ = "STUB: not implemented"; return *new(DecayFn) }
 
-// DecayFixed subtracts from by the provided minuend, and deletes the tag when
-// first reaching 0 or negative.
-func DecayFixed(minuend int) DecayFn {
-	return func(value DecayingValue) (_ int, rm bool) {
-		v := value.Value - minuend
-		return v, v <= 0
-	}
-}
+func DecayFixed(minuend int) DecayFn { _ = "STUB: not implemented"; return *new(DecayFn) }
 
-// DecayLinear applies a fractional coefficient to the value of the current tag,
-// rounding down via math.Floor. It erases the tag when the result is zero.
-func DecayLinear(coef float64) DecayFn {
-	return func(value DecayingValue) (after int, rm bool) {
-		v := math.Floor(float64(value.Value) * coef)
-		return int(v), v <= 0
-	}
-}
+func DecayLinear(coef float64) DecayFn { _ = "STUB: not implemented"; return *new(DecayFn) }
 
-// DecayExpireWhenInactive expires a tag after a certain period of no bumps.
 func DecayExpireWhenInactive(after time.Duration) DecayFn {
-	return func(value DecayingValue) (_ int, rm bool) {
-		rm = time.Until(value.LastVisit) >= after
-		return 0, rm
-	}
+	_ = "STUB: not implemented"
+	return *new(DecayFn)
 }
 
-// BumpSumUnbounded adds the incoming value to the peer's score.
-func BumpSumUnbounded() BumpFn {
-	return func(value DecayingValue, delta int) (after int) {
-		return value.Value + delta
-	}
-}
+func BumpSumUnbounded() BumpFn { _ = "STUB: not implemented"; return *new(BumpFn) }
 
-// BumpSumBounded keeps summing the incoming score, keeping it within a
-// [min, max] range.
-func BumpSumBounded(min, max int) BumpFn {
-	return func(value DecayingValue, delta int) (after int) {
-		v := value.Value + delta
-		if v >= max {
-			return max
-		} else if v <= min {
-			return min
-		}
-		return v
-	}
-}
+func BumpSumBounded(min, max int) BumpFn { _ = "STUB: not implemented"; return *new(BumpFn) }
 
-// BumpOverwrite replaces the current value of the tag with the incoming one.
-func BumpOverwrite() BumpFn {
-	return func(_ DecayingValue, delta int) (after int) {
-		return delta
-	}
-}
+func BumpOverwrite() BumpFn { _ = "STUB: not implemented"; return *new(BumpFn) }

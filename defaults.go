@@ -1,7 +1,5 @@
 package libp2p
 
-// This file contains all the default configuration options.
-
 import (
 	"crypto/rand"
 
@@ -23,25 +21,13 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-// DefaultSecurity is the default security option.
-//
-// Useful when you want to extend, but not replace, the supported transport
-// security protocols.
 var DefaultSecurity = ChainOptions(
 	Security(tls.ID, tls.New),
 	Security(noise.ID, noise.New),
 )
 
-// DefaultMuxers configures libp2p to use the stream connection multiplexers.
-//
-// Use this option when you want to *extend* the set of multiplexers used by
-// libp2p instead of replacing them.
 var DefaultMuxers = Muxer(yamux.ID, yamux.DefaultTransport)
 
-// DefaultTransports are the default libp2p transports.
-//
-// Use this option when you want to *extend* the set of transports used by
-// libp2p instead of replacing them.
 var DefaultTransports = ChainOptions(
 	Transport(tcp.NewTCPTransport),
 	Transport(quic.NewTransport),
@@ -50,16 +36,11 @@ var DefaultTransports = ChainOptions(
 	Transport(libp2pwebrtc.New),
 )
 
-// DefaultPrivateTransports are the default libp2p transports when a PSK is supplied.
-//
-// Use this option when you want to *extend* the set of transports used by
-// libp2p instead of replacing them.
 var DefaultPrivateTransports = ChainOptions(
 	Transport(tcp.NewTCPTransport),
 	Transport(ws.New),
 )
 
-// DefaultPeerstore configures libp2p to use the default peerstore.
 var DefaultPeerstore Option = func(cfg *Config) error {
 	ps, err := pstoremem.NewPeerstore()
 	if err != nil {
@@ -68,7 +49,6 @@ var DefaultPeerstore Option = func(cfg *Config) error {
 	return cfg.Apply(Peerstore(ps))
 }
 
-// RandomIdentity generates a random identity. (default behaviour)
 var RandomIdentity = func(cfg *Config) error {
 	priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
 	if err != nil {
@@ -77,7 +57,6 @@ var RandomIdentity = func(cfg *Config) error {
 	return cfg.Apply(Identity(priv))
 }
 
-// DefaultListenAddrs configures libp2p to use default listen address.
 var DefaultListenAddrs = func(cfg *Config) error {
 	addrs := []string{
 		"/ip4/0.0.0.0/tcp/0",
@@ -100,13 +79,12 @@ var DefaultListenAddrs = func(cfg *Config) error {
 	return cfg.Apply(ListenAddrs(listenAddrs...))
 }
 
-// DefaultEnableRelay enables relay dialing and listening by default.
 var DefaultEnableRelay = func(cfg *Config) error {
 	return cfg.Apply(EnableRelay())
 }
 
 var DefaultResourceManager = func(cfg *Config) error {
-	// Default memory limit: 1/8th of total memory, minimum 128MB, maximum 1GB
+
 	limits := rcmgr.DefaultLimits
 	SetDefaultServiceLimits(&limits)
 	mgr, err := rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(limits.AutoScale()))
@@ -117,7 +95,6 @@ var DefaultResourceManager = func(cfg *Config) error {
 	return cfg.Apply(ResourceManager(mgr))
 }
 
-// DefaultConnectionManager creates a default connection manager
 var DefaultConnectionManager = func(cfg *Config) error {
 	mgr, err := connmgr.NewConnManager(160, 192)
 	if err != nil {
@@ -127,27 +104,20 @@ var DefaultConnectionManager = func(cfg *Config) error {
 	return cfg.Apply(ConnectionManager(mgr))
 }
 
-// DefaultPrometheusRegisterer configures libp2p to use the default registerer
 var DefaultPrometheusRegisterer = func(cfg *Config) error {
 	return cfg.Apply(PrometheusRegisterer(prometheus.DefaultRegisterer))
 }
 
 var defaultUDPBlackHoleDetector = func(cfg *Config) error {
-	// A black hole is a binary property. On a network if UDP dials are blocked, all dials will
-	// fail. So a low success rate of 5 out 100 dials is good enough.
+
 	return cfg.Apply(UDPBlackHoleSuccessCounter(&swarm.BlackHoleSuccessCounter{N: 100, MinSuccesses: 5, Name: "UDP"}))
 }
 
 var defaultIPv6BlackHoleDetector = func(cfg *Config) error {
-	// A black hole is a binary property. On a network if there is no IPv6 connectivity, all
-	// dials will fail. So a low success rate of 5 out 100 dials is good enough.
+
 	return cfg.Apply(IPv6BlackHoleSuccessCounter(&swarm.BlackHoleSuccessCounter{N: 100, MinSuccesses: 5, Name: "IPv6"}))
 }
 
-// Complete list of default options and when to fallback on them.
-//
-// Please *DON'T* specify default options any other way. Putting this all here
-// makes tracking defaults *much* easier.
 var defaults = []struct {
 	fallback func(cfg *Config) bool
 	opt      Option
@@ -210,8 +180,6 @@ var defaults = []struct {
 	},
 }
 
-// Defaults configures libp2p to use the default options. Can be combined with
-// other options to *extend* the default options.
 var Defaults Option = func(cfg *Config) error {
 	for _, def := range defaults {
 		if err := cfg.Apply(def.opt); err != nil {
@@ -221,9 +189,6 @@ var Defaults Option = func(cfg *Config) error {
 	return nil
 }
 
-// FallbackDefaults applies default options to the libp2p node if and only if no
-// other relevant options have been applied. will be appended to the options
-// passed into New.
 var FallbackDefaults Option = func(cfg *Config) error {
 	for _, def := range defaults {
 		if !def.fallback(cfg) {
